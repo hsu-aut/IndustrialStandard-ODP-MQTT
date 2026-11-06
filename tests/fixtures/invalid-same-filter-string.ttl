@@ -1,0 +1,25 @@
+# Control case for mqttshape:SubscriptionsShareAFilterString.
+# Two subscriptions of one session carry two *different* Topic Filter nodes
+# with the same string -- the same error as invalid-same-filter-node.ttl, only
+# written differently, which is why it needs its own constraint. 1.2.
+
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix MQTT: <http://www.w3id.org/hsu-aut/MQTT#> .
+@prefix ex:   <http://example.org/mqtt-fixture-same-filter-string#> .
+
+ex:Session_B rdf:type MQTT:MQTTSession ;
+    MQTT:hasSubscription ex:Sub_3 , ex:Sub_4 .
+
+ex:Sub_3 rdf:type MQTT:Subscription ;
+    MQTT:hasTopicFilter ex:Filter_3 ;
+    MQTT:hasMaximumQoS MQTT:QoS0 .
+
+ex:Sub_4 rdf:type MQTT:Subscription ;
+    MQTT:hasTopicFilter ex:Filter_4 ;
+    MQTT:hasMaximumQoS MQTT:QoS1 .
+
+ex:Filter_3 rdf:type MQTT:TopicFilter ;
+    MQTT:topicFilterString "amr-1/skills/drive/state/+" .
+
+ex:Filter_4 rdf:type MQTT:TopicFilter ;
+    MQTT:topicFilterString "amr-1/skills/drive/state/+" .

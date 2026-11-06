@@ -1,0 +1,21 @@
+# Control case for mqttshape:SubscriptionsShareAFilterNode.
+# Two subscriptions of one session point at the same Topic Filter node. 1.2:
+# "Each Subscription within a Session has a different Topic Filter."
+
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix MQTT: <http://www.w3id.org/hsu-aut/MQTT#> .
+@prefix ex:   <http://example.org/mqtt-fixture-same-filter-node#> .
+
+ex:Session_A rdf:type MQTT:MQTTSession ;
+    MQTT:hasSubscription ex:Sub_1 , ex:Sub_2 .
+
+ex:Sub_1 rdf:type MQTT:Subscription ;
+    MQTT:hasTopicFilter ex:Filter_Shared ;
+    MQTT:hasMaximumQoS MQTT:QoS0 .
+
+ex:Sub_2 rdf:type MQTT:Subscription ;
+    MQTT:hasTopicFilter ex:Filter_Shared ;
+    MQTT:hasMaximumQoS MQTT:QoS1 .
+
+ex:Filter_Shared rdf:type MQTT:TopicFilter ;
+    MQTT:topicFilterString "amr-1/skills/drive/start" .

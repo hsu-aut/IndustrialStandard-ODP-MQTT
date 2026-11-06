@@ -1,0 +1,67 @@
+# A conforming description: one AMR, one broker, one session with two
+# subscriptions, a shared subscription, and three acknowledgement packets.
+# Every one of the four shapes has something to look at here, and none of them
+# must report anything.
+
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix MQTT: <http://www.w3id.org/hsu-aut/MQTT#> .
+@prefix ex:   <http://example.org/mqtt-fixture#> .
+
+### Client, server and session (1.2, 4.1)
+
+ex:AMR_1 rdf:type MQTT:MQTTClient .
+ex:Broker rdf:type MQTT:MQTTServer .
+
+ex:Session_1 rdf:type MQTT:MQTTSession ;
+    MQTT:isSessionOfClient ex:AMR_1 ;
+    MQTT:isSessionOnServer ex:Broker ;
+    MQTT:hasSubscription ex:Subscription_Start , ex:Subscription_State .
+
+### Two subscriptions with two different topic filters (1.2)
+
+ex:Subscription_Start rdf:type MQTT:Subscription ;
+    MQTT:hasTopicFilter ex:Filter_Start ;
+    MQTT:hasMaximumQoS MQTT:QoS1 .
+
+ex:Subscription_State rdf:type MQTT:Subscription ;
+    MQTT:hasTopicFilter ex:Filter_State ;
+    MQTT:hasMaximumQoS MQTT:QoS0 .
+
+ex:Filter_Start rdf:type MQTT:TopicFilter ;
+    MQTT:topicFilterString "amr-1/skills/drive/start" .
+
+ex:Filter_State rdf:type MQTT:TopicFilter ;
+    MQTT:topicFilterString "amr-1/skills/drive/state/+" .
+
+### A shared subscription -- the standard's own example from 4.8.2
+
+ex:Subscription_Shared rdf:type MQTT:SharedSubscription ;
+    MQTT:hasTopicFilter ex:Filter_Shared ;
+    MQTT:hasMaximumQoS MQTT:QoS1 .
+
+ex:Filter_Shared rdf:type MQTT:TopicFilter ;
+    MQTT:topicFilterString "$share/consumer1/sport/tennis/+" .
+
+### A publication: topic name without wildcards, response topic likewise
+
+ex:Message_Start rdf:type MQTT:ApplicationMessage ;
+    MQTT:hasTopic ex:Topic_Start ;
+    MQTT:hasQoS MQTT:QoS1 ;
+    MQTT:responseTopic "amr-1/skills/drive/result" .
+
+ex:Topic_Start rdf:type MQTT:Topic ;
+    MQTT:topicName "amr-1/skills/drive/start" .
+
+ex:Publish_1 rdf:type MQTT:Publish ;
+    MQTT:hasApplicationMessage ex:Message_Start .
+
+### Three packets with reason codes allowed in exactly these packet types (2.4)
+
+ex:Connack_1 rdf:type MQTT:Connack ;
+    MQTT:hasReasonCode MQTT:ReasonCodeSuccess .
+
+ex:Suback_1 rdf:type MQTT:Suback ;
+    MQTT:hasReasonCode MQTT:ReasonCodeGrantedQoS1 .
+
+ex:Disconnect_1 rdf:type MQTT:Disconnect ;
+    MQTT:hasReasonCode MQTT:ReasonCodeSessionTakenOver .

@@ -106,16 +106,42 @@ and data, and the reason codes 0x18, 0x19 and 0x8C are present, but the
 is the wrong instrument for a protocol flow; a state machine or process pattern
 is the right one.
 
-Four
-constraints of the standard are string patterns or key constraints and cannot be
-expressed in OWL 2; they belong in SHACL and are named here so that nobody
-expects a reasoner to catch them:
+## Constraints that OWL cannot express
 
-- wildcards must not appear in a topic name (4.7.1),
-- each subscription within a session has a different topic filter (1.2),
-- a shared subscription's topic filter starts with `$share/` (4.8.2),
-- a reason code appears only in the packet types Table 2-6 lists for it (2.4) —
-  recorded as an annotation here, not as an axiom.
+Four statements of the standard are normative and mechanically checkable, but
+they are not axioms: three constrain the characters of a string and one is a key
+constraint over a pair of individuals. They live in `constraints/mqtt-shapes.ttl`
+as SHACL shapes, so that a model can be checked against them instead of being
+trusted:
+
+| Constraint | Clause | Shape |
+|---|---|---|
+| Wildcards must not appear in a topic name | 4.7.1, [MQTT-4.7.0-1] | `TopicNameNoWildcards`, and `ResponseTopicNoWildcards` for the response topic of 3.3.2.3.5 |
+| Each subscription within a session has a different topic filter | 1.2 | `SubscriptionsShareAFilterNode`, `SubscriptionsShareAFilterString` |
+| A shared subscription's topic filter has the form `$share/{ShareName}/{filter}` | 4.8.2, [MQTT-4.8.2-1], [MQTT-4.8.2-2] | `SharedSubscriptionFilterPrefix` |
+| A reason code appears only in the packet types Table 2-6 lists for it | 2.4 | `ReasonCodeNotAllowedInPacketType` |
+
+These are conditions of the *standard*, not of any model that reuses this
+pattern, which is why they ship with it. Validate your data **together with**
+`mqtt.ttl`: the reason code shape reads the ontology's own `appliesToPacket`
+annotations and the class hierarchy of the control packets, and finds nothing
+without them.
+
+```sh
+python tools/check_shapes.py        # needs rdflib and pyshacl
+```
+
+The script checks every shape twice over — against `tests/fixtures/valid.ttl`,
+which has to pass, and against one fixture per shape built to break exactly that
+shape. A shape that never fires would prove nothing, so the expected result is
+not "no violations" but a named set of them.
+
+One thing the shapes deliberately do not do: a subscription that is *not* typed
+`MQTT:SharedSubscription` but carries a `$share/` filter goes unreported. The
+`$share/` prefix marks a filter as shared (4.8.2), so such a model is probably
+wrong — but the standard words the rule in one direction only, and reporting the
+other direction would amount to classifying the subscription rather than
+checking it.
 
 ## Versions
 
@@ -147,7 +173,10 @@ Of course you can also clone this repository and import a local copy.
 ## Checks
 
 The ontology is OWL 2 DL (`robot validate-profile --profile DL`), consistent
-under HermiT and free of unsatisfiable classes. The axioms added since 1.0.0 are
+under HermiT and free of unsatisfiable classes. The shapes are checked with
+`tools/check_shapes.py`, including the control that `mqtt.ttl` on its own — 51
+individuals, among them all 45 reason codes — does not trip over its own shapes.
+The axioms added since 1.0.0 are
 backed by thirteen reasoner probes, among them a case that has to fail, a probe
 showing that the new minimum cardinalities do not invalidate existing data, and
 two showing that disjointness which used to be asserted is now derived,

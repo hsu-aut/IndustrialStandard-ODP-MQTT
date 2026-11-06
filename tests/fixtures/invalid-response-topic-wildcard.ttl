@@ -1,0 +1,9 @@
+# Control case for mqttshape:ResponseTopicNoWildcards.
+# A Response Topic with a multi-level wildcard, forbidden by [MQTT-3.3.2-14].
+
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix MQTT: <http://www.w3id.org/hsu-aut/MQTT#> .
+@prefix ex:   <http://example.org/mqtt-fixture-invalid-response-topic#> .
+
+ex:Message_BadResponse rdf:type MQTT:ApplicationMessage ;
+    MQTT:responseTopic "amr-1/skills/drive/result/#" .

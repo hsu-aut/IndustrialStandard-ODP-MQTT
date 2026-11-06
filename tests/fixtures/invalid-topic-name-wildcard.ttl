@@ -1,0 +1,10 @@
+# Control case for mqttshape:TopicNameNoWildcards.
+# A Topic Name with a single-level wildcard. 4.7.1 [MQTT-4.7.0-1] forbids it:
+# wildcards belong in a Topic Filter, not in a Topic Name.
+
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix MQTT: <http://www.w3id.org/hsu-aut/MQTT#> .
+@prefix ex:   <http://example.org/mqtt-fixture-invalid-topic-name#> .
+
+ex:Topic_Wildcard rdf:type MQTT:Topic ;
+    MQTT:topicName "amr-1/skills/+/start" .

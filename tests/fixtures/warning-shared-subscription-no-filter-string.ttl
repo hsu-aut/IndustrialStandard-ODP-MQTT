@@ -1,0 +1,14 @@
+# Control case for mqttshape:SharedSubscriptionFilterStringPresent, a warning
+# rather than a violation: the standard does not require a model to record the
+# filter string, but without it the $share/ condition of 4.8.2 cannot be
+# checked, and silence would be misleading.
+
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix MQTT: <http://www.w3id.org/hsu-aut/MQTT#> .
+@prefix ex:   <http://example.org/mqtt-fixture-no-filter-string#> .
+
+ex:Sub_SharedUnchecked rdf:type MQTT:SharedSubscription ;
+    MQTT:hasTopicFilter ex:Filter_Unknown ;
+    MQTT:hasMaximumQoS MQTT:QoS1 .
+
+ex:Filter_Unknown rdf:type MQTT:TopicFilter .

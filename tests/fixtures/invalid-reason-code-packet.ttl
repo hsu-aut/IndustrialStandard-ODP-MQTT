@@ -1,0 +1,11 @@
+# Control case for mqttshape:ReasonCodeNotAllowedInPacketType.
+# Reason Code 0x8E (Session taken over) is listed in Table 2-6 for DISCONNECT
+# only. Here a CONNACK carries it, which no reasoner can detect: the packet
+# types are an annotation in mqtt.ttl, not an axiom.
+
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix MQTT: <http://www.w3id.org/hsu-aut/MQTT#> .
+@prefix ex:   <http://example.org/mqtt-fixture-reason-code#> .
+
+ex:Connack_Bad rdf:type MQTT:Connack ;
+    MQTT:hasReasonCode MQTT:ReasonCodeSessionTakenOver .

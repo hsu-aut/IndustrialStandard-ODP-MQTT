@@ -1,0 +1,16 @@
+# Control case for mqttshape:SharedSubscriptionFilterPrefix.
+# A Shared Subscription whose Topic Filter lacks the $share/{ShareName}/
+# prefix required by 4.8.2 [MQTT-4.8.2-1]. The filter string itself is a valid
+# Topic Filter -- that is the point: only the prefix tells a reader, and a
+# shape, that the subscription is shared.
+
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix MQTT: <http://www.w3id.org/hsu-aut/MQTT#> .
+@prefix ex:   <http://example.org/mqtt-fixture-shared-prefix#> .
+
+ex:Sub_Shared rdf:type MQTT:SharedSubscription ;
+    MQTT:hasTopicFilter ex:Filter_NoShare ;
+    MQTT:hasMaximumQoS MQTT:QoS1 .
+
+ex:Filter_NoShare rdf:type MQTT:TopicFilter ;
+    MQTT:topicFilterString "sport/tennis/+" .
