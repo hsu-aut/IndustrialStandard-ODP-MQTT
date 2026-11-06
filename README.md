@@ -37,14 +37,20 @@ annotation naming the clause of the standard it reflects.
 `clientId`, which identifies it uniquely (clause 3.1.3.1), and uses a
 `MQTTConnection`. A `MQTTSession` is the stateful interaction between a client
 and a server (`isSessionOfClient`, `isSessionOnServer`); it can span several
-consecutive connections. A `MQTTServer` is reached at an `endpointUrl` and
+consecutive connections, each of which `hasSession`. `connectsTo` relates a client to the
+server it talks to and follows from the session or the connection by property
+chains. A `MQTTServer` is reached at an `endpointUrl` and
 declares what it supports: maximum QoS, retained messages, wildcard
 subscriptions, shared subscriptions and subscription identifiers.
 
-**Topics and subscriptions.** An `ApplicationMessage` has one `Topic` with a
-`topicName`; a `Subscription` has one `TopicFilter` with a
-`topicFilterString` and one maximum QoS, and belongs to a session.
-`SharedSubscription` and `WildcardSubscription` are kinds of subscription, and
+**Topics and subscriptions.** A client `publishesTo` a `Topic`. An
+`ApplicationMessage` has one `Topic` with a `topicName` and may name a response
+topic (`hasResponseTopic`); `RetainedMessage` and `WillMessage` are kinds of
+application message. A session `hasSubscription`; a `Subscription` has one
+`TopicFilter` with a `topicFilterString` and one maximum QoS, and unless it is
+shared it belongs to at most one session (clause 1.2). `subscribesTo` relates a
+client to a topic filter and follows from its sessions' subscriptions by a
+property chain. `SharedSubscription` and `WildcardSubscription` are kinds of subscription, and
 a subscription carries its options: `noLocal`, `retainAsPublished` and a
 `RetainHandling` value.
 
@@ -82,7 +88,20 @@ The ontology is OWL 2 DL and consistent under HermiT.
 
 ## Class diagram
 
-*To be added.*
+The diagram shows the communication core: clients, connections, sessions,
+servers, subscriptions, topics, topic filters, application messages and QoS.
+Arrows point from the domain to the range of a property; hollow triangles
+denote subclass relations. Class axioms are listed
+inside the boxes in description logic notation; `{id}` marks the key
+`clientId`. Not shown: the control packets with their headers, payloads,
+properties and reason codes, `PayloadFormat`, `RetainHandling` and most data
+properties.
+
+<p align="center">
+<img src="pictures/mqtt.png" width="900" title="Class diagram of the MQTT ontology (communication core)">
+</p>
+
+The editable source is [`pictures/mqtt.drawio`](pictures/mqtt.drawio) (open with [draw.io](https://www.drawio.com)).
 
 ## Constraints
 
