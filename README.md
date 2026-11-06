@@ -48,7 +48,8 @@ covers the whole normative vocabulary of the standard:
 - **All 27 protocol properties of Table 2-4** (clause 2.2.2.2), including the
   group that describes what a broker can actually do: maximum QoS, retained
   messages, wildcard subscriptions, shared subscriptions and subscription
-  identifiers. Those five are modelled as capabilities of `MQTT:MQTTServer`,
+  identifiers. A User Property is a class rather than a literal, since 2.2.2.2
+  defines it as a name-value pair and allows the same name more than once. Those five are modelled as capabilities of `MQTT:MQTTServer`,
   because that is how the standard words them — "this byte declares whether the
   *Server* supports …" — even though it transports them in the CONNACK packet.
 - **All 45 reason codes of Table 2-6** (clause 2.4) as individuals of an
@@ -147,6 +148,7 @@ checking it.
 
 | Version | Change |
 |---|---|
+| **5.0.0** | Three shapes corrected where a class, a literal or a datatype was the wrong instrument. `clientId` moves to `MQTT:MQTTClient`, functional, with `owl:hasKey` for clause 3.1.3.1 ("Each Client connecting to the Server has a unique ClientID"); the class `ClientIdentifier` and `hasClientIdentifier` are **removed** — the ClientID assigned by the server was a plain literal next to them. A **User Property is now a class** `UserProperty` with `propertyName` and `propertyValue`, exactly one each, reached through `hasUserProperty`: clause 2.2.2.2 calls it a UTF-8 **String Pair** and allows the same name to appear more than once, which a single `xsd:string` could express neither of. `password` becomes `xsd:base64Binary`, because 3.1.3.6 says "The Password field is Binary Data" — MQTT 5.0 changed that from 3.1.1 and the ontology had not followed. **Breaking fix:** the domain of `serverReference` moves from `Connack` to `MQTTProperty`; with `Connack` a DISCONNECT carrying a Server Reference (3.14.2.2.5, 4.11) made a model **inconsistent**, since the fifteen packet types are pairwise disjoint. The division behind `MQTTProperty` is now written into its comment: the properties of Table 2-4 that appear in several packet types and have no carrier of their own live there, the other twenty live on the entity they are about. |
 | **4.0.0** | The server address is flat. `MQTT:endpointUrl` moves to `MQTT:MQTTServer`; the class `ServerEndpoint`, the property `hasEndpoint` and the property `hasPortNumber` are **removed**. Scheme and port are part of the URI and are no longer stated twice — the old form allowed a port in the URI and a `hasPortNumber` to contradict each other, with nothing able to detect it. The flat form is the one the sibling pattern WADL uses for `hasBase`. The difference to OPC UA is deliberate: there an `EndpointDescription` is a structure of the standard itself (Part 4) carrying security mode, policy and identity tokens, whereas MQTT 5.0 defines no endpoint structure at all. |
 | **3.0.0** | All 45 reason codes of Table 2-6 as individuals of an enumerated class `ReasonCode`, parsed from the standard's own table rather than transcribed. `SuccessReasonCode` and `ErrorReasonCode` defined over the value (clause 2.4 draws the line at 0x80), so membership is derived: 35 error codes, 10 success codes. `hasReasonCode` relates a packet to its code, restricted to at most one on the seven packets that carry a single code, unrestricted on SUBACK and UNSUBACK which carry a list. `grantsQoS` links the three *Granted QoS* codes to the QoS levels. `appliesToPacket` records the packet types per code. **Breaking:** `reasonCode` is renamed to `reasonCodeValue` and its domain moves from `MQTTControlPacket` to `ReasonCode` — the value belongs to the code, the code to the packet. Keeping both would have been the same mistake that the QoS rework fixed in 2.0.0. |
 | **2.1.0** | Completeness pass against Table 2-4 of clause 2.2.2.2: the ten missing protocol properties added, so all 27 are covered. The five server capability properties (maximum QoS, retain, wildcard subscriptions, subscription identifiers, shared subscriptions) are modelled on `MQTTServer`. The remaining subscription options added: `noLocal`, `retainAsPublished`, and `RetainHandling` as an enumerated class with three individuals. `hasRequestedTopicFilter` on SUBSCRIBE and `hasRevokedTopicFilter` on UNSUBSCRIBE, each with a minimum cardinality of one, so that the packet side of subscribing reaches its filters at all. `isSessionOfClient` and `isSessionOnServer`, because a session outlives the network connection (1.2) and was previously reachable only through one. `cleanStart`, `willRetain`, and `DisallowedUnicodeCodePoint`, the fifteenth term of clause 1.2. Additive only — no axiom removed, no domain narrowed. |
@@ -161,11 +163,11 @@ version so that future changes cannot surprise you:
 
 ```turtle
 <http://example.org/my-ontology#> rdf:type owl:Ontology ;
-    owl:imports <https://raw.githubusercontent.com/hsu-aut/IndustrialStandard-ODP-MQTT/v4.0.0/mqtt.ttl> .
+    owl:imports <https://raw.githubusercontent.com/hsu-aut/IndustrialStandard-ODP-MQTT/v5.0.0/mqtt.ttl> .
 ```
 
 The ontology IRI is `http://www.w3id.org/hsu-aut/MQTT`, version IRIs are of the
-form `http://www.w3id.org/hsu-aut/MQTT/4.0.0`. **Note:** unlike the other
+form `http://www.w3id.org/hsu-aut/MQTT/5.0.0`. **Note:** unlike the other
 patterns in the list above, this one does not have a w3id redirect yet, so those
 IRIs do not resolve — use the raw URL above until it does.
 
@@ -178,7 +180,7 @@ under HermiT and free of unsatisfiable classes. The shapes are checked with
 `tools/check_shapes.py`, including the control that `mqtt.ttl` on its own — 51
 individuals, among them all 45 reason codes — does not trip over its own shapes.
 The axioms added since 1.0.0 are
-backed by fourteen reasoner probes, among them a case that has to fail, a probe
+backed by nineteen reasoner probes, among them a case that has to fail, a probe
 showing that the new minimum cardinalities do not invalidate existing data, and
 two showing that disjointness which used to be asserted is now derived,
 documented in `docs/design/MQTT-2.0.0-conceptualization.md` of the
