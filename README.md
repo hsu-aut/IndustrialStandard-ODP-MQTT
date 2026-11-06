@@ -32,12 +32,11 @@ standard-based ontologies, check out these links:
 The ontology follows *MQTT Version 5.0*, OASIS Standard, 07 March 2019 [1]. It
 covers the whole normative vocabulary of the standard:
 
-- **The normative vocabulary of clause 1.2** — network connection, application
-  message, client, server, session, subscription, shared subscription, wildcard
-  subscription, topic name, topic filter, control packet, malformed packet,
-  protocol error and will message. The fifteenth defined term, the disallowed
-  Unicode code points, is a matter of string encoding (1.5.4) and is
-  deliberately left out.
+- **The normative vocabulary of clause 1.2**, all fifteen defined terms —
+  network connection, application message, client, server, session,
+  subscription, shared subscription, wildcard subscription, topic name, topic
+  filter, control packet, malformed packet, protocol error, will message, and
+  the disallowed Unicode code points.
 - **The packet structure** — fixed header, variable header, payload, properties,
   reason codes, and all fifteen control packet types of clause 2.1.2, declared
   pairwise disjoint.
@@ -76,16 +75,17 @@ reasoner derives the class from the data and the data from the class, and their
 pairwise disjointness follows from the model instead of resting on a separate
 assertion.
 
-### Four entities that go beyond the standard
+### The one entity that goes beyond the standard
 
 MQTT 5.0 does not define a broker address: clause 1.2 explicitly delegates the
 transport to "a construct provided by the underlying transport protocol", and
 the word *endpoint* appears exactly once in the 137 pages, non-definitionally,
 in clause 3.1.4. A model of a concrete system needs the address nevertheless.
-The ontology therefore keeps `MQTT:ServerEndpoint`, `MQTT:hasEndpoint`,
-`MQTT:endpointUrl` and `MQTT:hasPortNumber`, and marks all four with a
-`dcterms:source` annotation saying that they are an extension beyond the
-standard. They can be found mechanically:
+The ontology therefore keeps `MQTT:endpointUrl` — a datatype property on
+`MQTT:MQTTServer`, range `xsd:anyURI`, deliberately not functional, since a
+broker is usually reachable at several URIs — and marks it with a
+`dcterms:source` annotation saying that it is an extension beyond the standard.
+It can be found mechanically:
 
 ```sparql
 SELECT ?e WHERE {
@@ -147,6 +147,7 @@ checking it.
 
 | Version | Change |
 |---|---|
+| **4.0.0** | The server address is flat. `MQTT:endpointUrl` moves to `MQTT:MQTTServer`; the class `ServerEndpoint`, the property `hasEndpoint` and the property `hasPortNumber` are **removed**. Scheme and port are part of the URI and are no longer stated twice — the old form allowed a port in the URI and a `hasPortNumber` to contradict each other, with nothing able to detect it. The flat form is the one the sibling pattern WADL uses for `hasBase`. The difference to OPC UA is deliberate: there an `EndpointDescription` is a structure of the standard itself (Part 4) carrying security mode, policy and identity tokens, whereas MQTT 5.0 defines no endpoint structure at all. |
 | **3.0.0** | All 45 reason codes of Table 2-6 as individuals of an enumerated class `ReasonCode`, parsed from the standard's own table rather than transcribed. `SuccessReasonCode` and `ErrorReasonCode` defined over the value (clause 2.4 draws the line at 0x80), so membership is derived: 35 error codes, 10 success codes. `hasReasonCode` relates a packet to its code, restricted to at most one on the seven packets that carry a single code, unrestricted on SUBACK and UNSUBACK which carry a list. `grantsQoS` links the three *Granted QoS* codes to the QoS levels. `appliesToPacket` records the packet types per code. **Breaking:** `reasonCode` is renamed to `reasonCodeValue` and its domain moves from `MQTTControlPacket` to `ReasonCode` — the value belongs to the code, the code to the packet. Keeping both would have been the same mistake that the QoS rework fixed in 2.0.0. |
 | **2.1.0** | Completeness pass against Table 2-4 of clause 2.2.2.2: the ten missing protocol properties added, so all 27 are covered. The five server capability properties (maximum QoS, retain, wildcard subscriptions, subscription identifiers, shared subscriptions) are modelled on `MQTTServer`. The remaining subscription options added: `noLocal`, `retainAsPublished`, and `RetainHandling` as an enumerated class with three individuals. `hasRequestedTopicFilter` on SUBSCRIBE and `hasRevokedTopicFilter` on UNSUBSCRIBE, each with a minimum cardinality of one, so that the packet side of subscribing reaches its filters at all. `isSessionOfClient` and `isSessionOnServer`, because a session outlives the network connection (1.2) and was previously reachable only through one. `cleanStart`, `willRetain`, and `DisallowedUnicodeCodePoint`, the fifteenth term of clause 1.2. Additive only — no axiom removed, no domain narrowed. |
 | **2.0.0** | Quality of service reworked as an enumerated class with three individuals; `hasQoS` and `hasMaximumQoS` added; the three publication classes defined instead of asserted. Cardinalities from clause 1.2 for subscriptions, functional properties where the standard states uniqueness. `MalformedPacket` and `ProtocolError` added, completing the vocabulary of clause 1.2. A label for every entity and a `dcterms:source` clause reference throughout, plus ontology metadata (title, creator, licence, citation, preferred prefix). **Breaking:** the domain of `qosLevel` changed from `owl:Thing` to `MQTT:QoS`, the domain of `hasTopic` from `owl:Thing` to `MQTT:ApplicationMessage`, the domain of `topicAlias` from `MQTT:ApplicationMessage` to `MQTT:Publish`, and the disjointness of `SharedSubscription` and `WildcardSubscription` was **removed** — clause 4.8.2 refutes it, since its own example `$share/consumer1/sport/tennis/+` is a shared subscription with a wildcard. |
@@ -160,11 +161,11 @@ version so that future changes cannot surprise you:
 
 ```turtle
 <http://example.org/my-ontology#> rdf:type owl:Ontology ;
-    owl:imports <https://raw.githubusercontent.com/hsu-aut/IndustrialStandard-ODP-MQTT/v3.0.0/mqtt.ttl> .
+    owl:imports <https://raw.githubusercontent.com/hsu-aut/IndustrialStandard-ODP-MQTT/v4.0.0/mqtt.ttl> .
 ```
 
 The ontology IRI is `http://www.w3id.org/hsu-aut/MQTT`, version IRIs are of the
-form `http://www.w3id.org/hsu-aut/MQTT/3.0.0`. **Note:** unlike the other
+form `http://www.w3id.org/hsu-aut/MQTT/4.0.0`. **Note:** unlike the other
 patterns in the list above, this one does not have a w3id redirect yet, so those
 IRIs do not resolve — use the raw URL above until it does.
 
@@ -177,7 +178,7 @@ under HermiT and free of unsatisfiable classes. The shapes are checked with
 `tools/check_shapes.py`, including the control that `mqtt.ttl` on its own — 51
 individuals, among them all 45 reason codes — does not trip over its own shapes.
 The axioms added since 1.0.0 are
-backed by thirteen reasoner probes, among them a case that has to fail, a probe
+backed by fourteen reasoner probes, among them a case that has to fail, a probe
 showing that the new minimum cardinalities do not invalidate existing data, and
 two showing that disjointness which used to be asserted is now derived,
 documented in `docs/design/MQTT-2.0.0-conceptualization.md` of the

@@ -17,11 +17,6 @@
 # hierarchy of the control packets, so it silently finds nothing if the
 # ontology is absent. tools/check_shapes.py does it that way and validates the
 # shapes against the fixtures in tests/fixtures/.
-#
-# What is not here. The behaviour of the protocol -- flow control (4.9), the
-# authentication exchange (4.12), the ordering of packets. A vocabulary pattern
-# and a set of constraints over one graph are both the wrong instrument for a
-# protocol flow; see the README.
 
 @prefix sh:        <http://www.w3.org/ns/shacl#> .
 @prefix rdf:       <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .

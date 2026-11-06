@@ -15,10 +15,7 @@ nothing.
 Usage:
     python tools/check_shapes.py [<fixture> ...]
 
-Needs rdflib and pyshacl. If this repository has no environment of its own,
-any interpreter that has both will do, for example the one of the CaSkBot
-repository:
-    ../CaSkBot/.venv/Scripts/python tools/check_shapes.py
+Needs rdflib and pyshacl. 
 """
 
 from __future__ import annotations

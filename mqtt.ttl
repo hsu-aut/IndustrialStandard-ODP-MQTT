@@ -10,9 +10,9 @@
 @base <http://www.w3id.org/hsu-aut/MQTT#> .
 
 <http://www.w3id.org/hsu-aut/MQTT> rdf:type owl:Ontology ;
-                                    owl:versionIRI <http://www.w3id.org/hsu-aut/MQTT/3.0.0> ;
-                                    rdfs:comment "MQTT (Message Queuing Telemetry Transport) Ontology representing the MQTT v5.0 protocol standard as defined by OASIS. This ontology captures the core concepts of MQTT including clients, servers, connections, control packets, topics, subscriptions, and message exchange patterns. Every entity carries a dcterms:source annotation naming the clause of the standard it reflects; the four entities around the server address carry an explicit note that they go beyond the standard instead." ;
-                                    owl:versionInfo "3.0.0" ;
+                                    owl:versionIRI <http://www.w3id.org/hsu-aut/MQTT/4.0.0> ;
+                                    rdfs:comment "MQTT (Message Queuing Telemetry Transport) Ontology representing the MQTT v5.0 protocol standard as defined by OASIS. This ontology captures the core concepts of MQTT including clients, servers, connections, control packets, topics, subscriptions, and message exchange patterns. Every entity carries a dcterms:source annotation naming the clause of the standard it reflects; the one entity for the server address carries an explicit note that it goes beyond the standard instead." ;
+                                    owl:versionInfo "4.0.0" ;
                                     rdfs:label "MQTT"@en ;
                                     dcterms:title "MQTT - An Ontology Design Pattern for the MQTT Version 5.0 Protocol"@en ;
                                     dcterms:description "Ontology design pattern of the OASIS MQTT Version 5.0 standard. It covers the normative vocabulary of clause 1.2, the fifteen control packet types of clause 2.1.2, topics and topic filters, sessions and subscriptions, and the three quality of service levels, so that publish/subscribe communication can be described in a standard-based way."@en ;
@@ -94,15 +94,6 @@ MQTT:hasControlPacket rdf:type owl:ObjectProperty ;
                       rdfs:comment "Associates an MQTT connection with control packets exchanged over it." ;
                       rdfs:label "has control packet"@en ;
                       dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2"@en .
-
-
-###  http://www.w3id.org/hsu-aut/MQTT#hasEndpoint
-MQTT:hasEndpoint rdf:type owl:ObjectProperty ;
-                 rdfs:domain MQTT:MQTTServer ;
-                 rdfs:range MQTT:ServerEndpoint ;
-                 rdfs:comment "Associates an MQTT Server with its network endpoint." ;
-                 rdfs:label "has endpoint"@en ;
-                 dcterms:source "Extension beyond MQTT Version 5.0: not defined in the standard. The word appears once, non-definitionally, in 3.1.4: 'a Server MAY support multiple protocols [...] on the same TCP port or other network endpoint'."@en .
 
 
 ###  http://www.w3id.org/hsu-aut/MQTT#hasFixedHeader
@@ -402,9 +393,9 @@ MQTT:dupFlag rdf:type owl:DatatypeProperty ;
 
 ###  http://www.w3id.org/hsu-aut/MQTT#endpointUrl
 MQTT:endpointUrl rdf:type owl:DatatypeProperty ;
-                 rdfs:domain MQTT:ServerEndpoint ;
+                 rdfs:domain MQTT:MQTTServer ;
                  rdfs:range xsd:anyURI ;
-                 rdfs:comment "The URL of the MQTT server endpoint." ;
+                 rdfs:comment "The URI a Server can be reached at, for example mqtt://broker.example:1883 or mqtts://broker.example:8883. Deliberately not functional: a Server is often reachable at several URIs, for instance one per network interface or one per transport. Scheme and port are part of the URI and are not stated a second time; until version 3.0.0 this property hung on a class ServerEndpoint together with a separate port number, which allowed the port to be stated twice and to contradict itself, and nothing could detect it. The flat form matches WADL:hasBase of the sibling pattern. Note the difference to OPC UA, where an EndpointDescription is a structure of the standard itself (Part 4) carrying security mode, security policy and identity tokens: MQTT 5.0 defines no such structure, so there is nothing to mirror." ;
                  rdfs:label "endpoint URL"@en ;
                  dcterms:source "Extension beyond MQTT Version 5.0: not defined in the standard. The word appears once, non-definitionally, in 3.1.4: 'a Server MAY support multiple protocols [...] on the same TCP port or other network endpoint'."@en .
 
@@ -416,15 +407,6 @@ MQTT:flags rdf:type owl:DatatypeProperty ;
            rdfs:comment "The flags field in the fixed header specific to each packet type." ;
            rdfs:label "flags"@en ;
            dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.1.3"@en .
-
-
-###  http://www.w3id.org/hsu-aut/MQTT#hasPortNumber
-MQTT:hasPortNumber rdf:type owl:DatatypeProperty ;
-                   rdfs:domain MQTT:ServerEndpoint ;
-                   rdfs:range xsd:positiveInteger ;
-                   rdfs:comment "The port number of the MQTT server endpoint." ;
-                   rdfs:label "has port number"@en ;
-                   dcterms:source "Extension beyond MQTT Version 5.0: not defined in the standard. The word appears once, non-definitionally, in 3.1.4: 'a Server MAY support multiple protocols [...] on the same TCP port or other network endpoint'."@en .
 
 
 ###  http://www.w3id.org/hsu-aut/MQTT#keepAlive
@@ -1193,13 +1175,6 @@ MQTT:RetainedMessage rdf:type owl:Class ;
                      rdfs:comment "Application message that is retained by the server for future subscribers." ;
                      rdfs:label "retained message"@en ;
                      dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.3.1.3"@en .
-
-
-###  http://www.w3id.org/hsu-aut/MQTT#ServerEndpoint
-MQTT:ServerEndpoint rdf:type owl:Class ;
-                    rdfs:comment "Network endpoint configuration for an MQTT server." ;
-                    rdfs:label "server endpoint"@en ;
-                    dcterms:source "Extension beyond MQTT Version 5.0: not defined in the standard. The word appears once, non-definitionally, in 3.1.4: 'a Server MAY support multiple protocols [...] on the same TCP port or other network endpoint'."@en .
 
 
 ###  http://www.w3id.org/hsu-aut/MQTT#SharedSubscription
