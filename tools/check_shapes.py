@@ -15,7 +15,11 @@ nothing.
 Usage:
     python tools/check_shapes.py [<fixture> ...]
 
-Needs rdflib and pyshacl. 
+Needs rdflib and pyshacl (see requirements.txt). In a fresh clone:
+    python -m venv .venv
+    .venv/Scripts/python -m pip install -r requirements.txt
+    .venv/Scripts/python tools/check_shapes.py
+On Linux and macOS the interpreter is .venv/bin/python.
 """
 
 from __future__ import annotations

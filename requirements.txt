@@ -1,0 +1,7 @@
+# Needed by tools/check_shapes.py only -- the ontology itself has no
+# dependencies. Set up with:
+#   python -m venv .venv
+#   .venv/Scripts/python -m pip install -r requirements.txt   (Windows)
+#   .venv/bin/python -m pip install -r requirements.txt       (Linux, macOS)
+rdflib>=7.0
+pyshacl>=0.26

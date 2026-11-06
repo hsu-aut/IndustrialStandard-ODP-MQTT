@@ -134,8 +134,13 @@ annotations and the class hierarchy of the control packets, and finds nothing
 without them.
 
 ```sh
-python tools/check_shapes.py        # needs rdflib and pyshacl
+python -m venv .venv
+.venv/Scripts/python -m pip install -r requirements.txt   # rdflib, pyshacl
+.venv/Scripts/python tools/check_shapes.py
 ```
+
+On Linux and macOS the interpreter is `.venv/bin/python`. The ontology itself
+has no dependencies — `requirements.txt` is for this script only.
 
 The script checks every shape twice over — against `tests/fixtures/valid.ttl`,
 which has to pass, and against one fixture per shape built to break exactly that
