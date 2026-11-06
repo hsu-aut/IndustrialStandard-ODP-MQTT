@@ -30,7 +30,7 @@ standard-based ontologies, check out these links:
 ## MQTT
 
 The ontology follows *MQTT Version 5.0*, OASIS Standard, 07 March 2019 [1]. It
-covers four parts of the standard:
+covers five parts of the standard:
 
 - **The normative vocabulary of clause 1.2** — network connection, application
   message, client, server, session, subscription, shared subscription, wildcard
@@ -46,6 +46,12 @@ covers four parts of the standard:
 - **Quality of service** — the three levels of clause 4.3 as an enumerated class
   with three individuals, usable both for the QoS of a message and for the
   maximum QoS of a subscription.
+- **All 27 protocol properties of Table 2-4** (clause 2.2.2.2), including the
+  group that describes what a broker can actually do: maximum QoS, retained
+  messages, wildcard subscriptions, shared subscriptions and subscription
+  identifiers. Those five are modelled as capabilities of `MQTT:MQTTServer`,
+  because that is how the standard words them — "this byte declares whether the
+  *Server* supports …" — even though it transports them in the CONNACK packet.
 
 Each entity carries an `rdfs:label`, an `rdfs:comment` and a `dcterms:source`
 annotation naming the clause of the standard it reflects, so that the claim
@@ -83,9 +89,9 @@ SELECT ?e WHERE {
 
 ### What is deliberately not modelled
 
-Error handling (4.13), flow control (4.9), the request/response pattern (4.10),
-enhanced authentication (4.12), and the subscription options other than maximum
-QoS — No Local, Retain As Published, Retain Handling (3.8.3.1). Three
+The reason codes (2.4 and the tables in 3.2 to 3.15, some 43 values), flow
+control (4.9), and the message flow of enhanced authentication (4.12) — its
+fields are present, its sequence is not. Three
 constraints of the standard are string patterns or key constraints and cannot be
 expressed in OWL 2; they belong in SHACL and are named here so that nobody
 expects a reasoner to catch them:
@@ -98,6 +104,7 @@ expects a reasoner to catch them:
 
 | Version | Change |
 |---|---|
+| **2.1.0** | Completeness pass against Table 2-4 of clause 2.2.2.2: the ten missing protocol properties added, so all 27 are covered. The five server capability properties (maximum QoS, retain, wildcard subscriptions, subscription identifiers, shared subscriptions) are modelled on `MQTTServer`. The remaining subscription options added: `noLocal`, `retainAsPublished`, and `RetainHandling` as an enumerated class with three individuals. `hasRequestedTopicFilter` on SUBSCRIBE and `hasRevokedTopicFilter` on UNSUBSCRIBE, each with a minimum cardinality of one, so that the packet side of subscribing reaches its filters at all. `isSessionOfClient` and `isSessionOnServer`, because a session outlives the network connection (1.2) and was previously reachable only through one. `cleanStart`, `willRetain`, and `DisallowedUnicodeCodePoint`, the fifteenth term of clause 1.2. Additive only — no axiom removed, no domain narrowed. |
 | **2.0.0** | Quality of service reworked as an enumerated class with three individuals; `hasQoS` and `hasMaximumQoS` added; the three publication classes defined instead of asserted. Cardinalities from clause 1.2 for subscriptions, functional properties where the standard states uniqueness. `MalformedPacket` and `ProtocolError` added, completing the vocabulary of clause 1.2. A label for every entity and a `dcterms:source` clause reference throughout, plus ontology metadata (title, creator, licence, citation, preferred prefix). **Breaking:** the domain of `qosLevel` changed from `owl:Thing` to `MQTT:QoS`, the domain of `hasTopic` from `owl:Thing` to `MQTT:ApplicationMessage`, the domain of `topicAlias` from `MQTT:ApplicationMessage` to `MQTT:Publish`, and the disjointness of `SharedSubscription` and `WildcardSubscription` was **removed** — clause 4.8.2 refutes it, since its own example `$share/consumer1/sport/tennis/+` is a shared subscription with a wildcard. |
 | 1.0.0 | First version: taxonomy of the protocol, fifteen control packet types, domains and ranges. |
 
@@ -109,11 +116,11 @@ version so that future changes cannot surprise you:
 
 ```turtle
 <http://example.org/my-ontology#> rdf:type owl:Ontology ;
-    owl:imports <https://raw.githubusercontent.com/hsu-aut/IndustrialStandard-ODP-MQTT/v2.0.0/mqtt.ttl> .
+    owl:imports <https://raw.githubusercontent.com/hsu-aut/IndustrialStandard-ODP-MQTT/v2.1.0/mqtt.ttl> .
 ```
 
 The ontology IRI is `http://www.w3id.org/hsu-aut/MQTT`, version IRIs are of the
-form `http://www.w3id.org/hsu-aut/MQTT/2.0.0`. **Note:** unlike the other
+form `http://www.w3id.org/hsu-aut/MQTT/2.1.0`. **Note:** unlike the other
 patterns in the list above, this one does not have a w3id redirect yet, so those
 IRIs do not resolve — use the raw URL above until it does.
 
@@ -122,8 +129,10 @@ Of course you can also clone this repository and import a local copy.
 ## Checks
 
 The ontology is OWL 2 DL (`robot validate-profile --profile DL`), consistent
-under HermiT and free of unsatisfiable classes. The axioms added in 2.0.0 are
-backed by reasoner probes, each of them paired with a case that has to fail,
+under HermiT and free of unsatisfiable classes. The axioms added in 2.0.0 and
+2.1.0 are backed by ten reasoner probes, among them a case that has to fail and
+a probe showing that the two new minimum cardinalities do not invalidate
+existing data,
 documented in `docs/design/MQTT-2.0.0-conceptualization.md` of the
 [CaSkBot](https://github.com/CaSkade-Automation/CaSkBot) repository, where this
 pattern is used.
