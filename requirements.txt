@@ -1,7 +1,9 @@
-# Needed by tools/check_shapes.py only -- the ontology itself has no
-# dependencies. Set up with:
+# For tools/check_shapes.py only -- the ontology itself has no dependencies.
+# The authoritative list is the PEP 723 block at the top of that script; this
+# file repeats it for environments without uv.
 #   python -m venv .venv
 #   .venv/Scripts/python -m pip install -r requirements.txt   (Windows)
 #   .venv/bin/python -m pip install -r requirements.txt       (Linux, macOS)
+# With uv, no setup is needed:  uv run tools/check_shapes.py
 rdflib>=7.0
 pyshacl>=0.26

@@ -134,13 +134,21 @@ annotations and the class hierarchy of the control packets, and finds nothing
 without them.
 
 ```sh
+uv run tools/check_shapes.py        # no setup: the script declares its own deps
+```
+
+The script carries its dependencies in a PEP 723 block, so [uv](https://docs.astral.sh/uv/)
+builds the environment itself. Without uv:
+
+```sh
 python -m venv .venv
-.venv/Scripts/python -m pip install -r requirements.txt   # rdflib, pyshacl
+.venv/Scripts/python -m pip install -r requirements.txt   # Windows
+.venv/bin/python -m pip install -r requirements.txt       # Linux, macOS
 .venv/Scripts/python tools/check_shapes.py
 ```
 
-On Linux and macOS the interpreter is `.venv/bin/python`. The ontology itself
-has no dependencies — `requirements.txt` is for this script only.
+The ontology itself has no dependencies — rdflib and pyshacl are for this
+script only.
 
 The script checks every shape twice over — against `tests/fixtures/valid.ttl`,
 which has to pass, and against one fixture per shape built to break exactly that

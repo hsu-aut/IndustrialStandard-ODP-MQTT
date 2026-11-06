@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "rdflib>=7.0",
+#     "pyshacl>=0.26",
+# ]
+# ///
 """Check the SHACL shapes of the MQTT ODP against the fixtures.
 
 Every shape in constraints/ is checked twice over: once against a fixture that
@@ -15,11 +22,13 @@ nothing.
 Usage:
     python tools/check_shapes.py [<fixture> ...]
 
-Needs rdflib and pyshacl (see requirements.txt). In a fresh clone:
+Needs rdflib and pyshacl. The dependency block above is the authoritative
+list (PEP 723), so with uv no setup is needed at all:
+    uv run tools/check_shapes.py
+Without uv, in a fresh clone:
     python -m venv .venv
-    .venv/Scripts/python -m pip install -r requirements.txt
-    .venv/Scripts/python tools/check_shapes.py
-On Linux and macOS the interpreter is .venv/bin/python.
+    .venv/Scripts/python -m pip install -r requirements.txt   (Windows)
+    .venv/bin/python -m pip install -r requirements.txt       (Linux, macOS)
 """
 
 from __future__ import annotations
