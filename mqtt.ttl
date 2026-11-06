@@ -1,0 +1,1003 @@
+@prefix : <http://www.w3id.org/hsu-aut/MQTT#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix MQTT: <http://www.w3id.org/hsu-aut/MQTT#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@base <http://www.w3id.org/hsu-aut/MQTT#> .
+
+<http://www.w3id.org/hsu-aut/MQTT> rdf:type owl:Ontology ;
+                                    owl:versionIRI <http://www.w3id.org/hsu-aut/MQTT/2.0.0> ;
+                                    rdfs:comment "MQTT (Message Queuing Telemetry Transport) Ontology representing the MQTT v5.0 protocol standard as defined by OASIS. This ontology captures the core concepts of MQTT including clients, servers, connections, control packets, topics, subscriptions, and message exchange patterns. Every entity carries a dcterms:source annotation naming the clause of the standard it reflects; the four entities around the server address carry an explicit note that they go beyond the standard instead." ;
+                                    owl:versionInfo "2.0.0" ;
+                                    rdfs:label "MQTT"@en ;
+                                    dcterms:title "MQTT - An Ontology Design Pattern for the MQTT Version 5.0 Protocol"@en ;
+                                    dcterms:description "Ontology design pattern of the OASIS MQTT Version 5.0 standard. It covers the normative vocabulary of clause 1.2, the fifteen control packet types of clause 2.1.2, topics and topic filters, sessions and subscriptions, and the three quality of service levels, so that publish/subscribe communication can be described in a standard-based way."@en ;
+                                    dcterms:creator "Luis Miguel Vieira da Silva" ;
+                                    dcterms:publisher "Helmut-Schmidt-University, Institute of Automation Technology" ;
+                                    dcterms:license <https://opensource.org/licenses/MIT> ;
+                                    dcterms:created "2025-08-08"^^xsd:date ;
+                                    dcterms:modified "2026-11-06"^^xsd:date ;
+                                    dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019" ;
+                                    dcterms:bibliographicCitation "A. Banks, E. Briggs, K. Borgendale, R. Gupta (eds.): MQTT Version 5.0. OASIS Standard, 07 March 2019. https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html" ;
+                                    vann:preferredNamespacePrefix "MQTT" ;
+                                    vann:preferredNamespaceUri "http://www.w3id.org/hsu-aut/MQTT#" ;
+                                    rdfs:seeAlso <https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html> .
+
+#################################################################
+#    Annotation properties used in the metadata
+#################################################################
+# Declared so that the ontology stays within OWL 2 DL: an undeclared
+# annotation property puts it out of profile.
+
+dcterms:title rdf:type owl:AnnotationProperty .
+dcterms:description rdf:type owl:AnnotationProperty .
+dcterms:creator rdf:type owl:AnnotationProperty .
+dcterms:publisher rdf:type owl:AnnotationProperty .
+dcterms:license rdf:type owl:AnnotationProperty .
+dcterms:created rdf:type owl:AnnotationProperty .
+dcterms:modified rdf:type owl:AnnotationProperty .
+dcterms:source rdf:type owl:AnnotationProperty .
+dcterms:bibliographicCitation rdf:type owl:AnnotationProperty .
+vann:preferredNamespacePrefix rdf:type owl:AnnotationProperty .
+vann:preferredNamespaceUri rdf:type owl:AnnotationProperty .
+
+#################################################################
+#    Object Properties
+#################################################################
+
+###  http://www.w3id.org/hsu-aut/MQTT#connectsTo
+MQTT:connectsTo rdf:type owl:ObjectProperty ;
+                rdfs:domain MQTT:MQTTClient ;
+                rdfs:range MQTT:MQTTServer ;
+                rdfs:comment "Relates an MQTT Client to an MQTT Server through a network connection." ;
+                rdfs:label "connects to"@en ;
+                dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#hasApplicationMessage
+MQTT:hasApplicationMessage rdf:type owl:ObjectProperty ,
+                                    owl:FunctionalProperty ;
+                           rdfs:domain MQTT:Publish ;
+                           rdfs:range MQTT:ApplicationMessage ;
+                           rdfs:comment "Associates a PUBLISH packet with its application message payload. Functional, because 3.3.3 describes the payload of a PUBLISH packet in the singular: 'The Payload contains the Application Message that is being published.'" ;
+                           rdfs:label "has application message"@en ;
+                           dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.3.3"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#hasClientIdentifier
+MQTT:hasClientIdentifier rdf:type owl:ObjectProperty ;
+                         rdfs:domain MQTT:MQTTClient ;
+                         rdfs:range MQTT:ClientIdentifier ;
+                         rdfs:comment "Associates an MQTT Client with its unique identifier." ;
+                         rdfs:label "has client identifier"@en ;
+                         dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.1.3.1"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#hasControlPacket
+MQTT:hasControlPacket rdf:type owl:ObjectProperty ;
+                      rdfs:domain MQTT:MQTTConnection ;
+                      rdfs:range MQTT:MQTTControlPacket ;
+                      rdfs:comment "Associates an MQTT connection with control packets exchanged over it." ;
+                      rdfs:label "has control packet"@en ;
+                      dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#hasEndpoint
+MQTT:hasEndpoint rdf:type owl:ObjectProperty ;
+                 rdfs:domain MQTT:MQTTServer ;
+                 rdfs:range MQTT:ServerEndpoint ;
+                 rdfs:comment "Associates an MQTT Server with its network endpoint." ;
+                 rdfs:label "has endpoint"@en ;
+                 dcterms:source "Extension beyond MQTT Version 5.0: not defined in the standard. The word appears once, non-definitionally, in 3.1.4: 'a Server MAY support multiple protocols [...] on the same TCP port or other network endpoint'."@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#hasFixedHeader
+MQTT:hasFixedHeader rdf:type owl:ObjectProperty ;
+                    rdfs:domain MQTT:MQTTControlPacket ;
+                    rdfs:range MQTT:FixedHeader ;
+                    rdfs:comment "Associates an MQTT Control Packet with its fixed header." ;
+                    rdfs:label "has fixed header"@en ;
+                    dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.1.1"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#hasMaximumQoS
+MQTT:hasMaximumQoS rdf:type owl:ObjectProperty ,
+                            owl:FunctionalProperty ;
+                   rdfs:domain MQTT:Subscription ;
+                   rdfs:range MQTT:QoS ;
+                   rdfs:comment "Associates a Subscription with its maximum Quality of Service. 1.2: 'A Subscription comprises a Topic Filter and a maximum QoS.' 3.8.3.1: the Maximum QoS field 'gives the maximum QoS level at which the Server can send Application Messages to the Client', and the value 3 is a Protocol Error. Functional, because a Subscription has exactly one maximum QoS." ;
+                   rdfs:label "has maximum QoS"@en ;
+                   dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2, 3.8.3.1"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#hasPayload
+MQTT:hasPayload rdf:type owl:ObjectProperty ;
+                rdfs:domain MQTT:MQTTControlPacket ;
+                rdfs:range MQTT:Payload ;
+                rdfs:comment "Associates an MQTT Control Packet with its payload." ;
+                rdfs:label "has payload"@en ;
+                dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.3"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#hasProperty
+MQTT:hasProperty rdf:type owl:ObjectProperty ;
+                 rdfs:domain MQTT:MQTTControlPacket ;
+                 rdfs:range MQTT:MQTTProperty ;
+                 rdfs:comment "Associates an MQTT Control Packet with its properties." ;
+                 rdfs:label "has property"@en ;
+                 dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.2.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#hasQoS
+MQTT:hasQoS rdf:type owl:ObjectProperty ,
+                     owl:FunctionalProperty ;
+            rdfs:domain MQTT:ApplicationMessage ;
+            rdfs:range MQTT:QoS ;
+            rdfs:comment "Associates an Application Message with the Quality of Service it is delivered with. 1.2: 'When an Application Message is transported by MQTT it contains payload data, a Quality of Service (QoS), a collection of Properties, and a Topic Name.' Functional, because 3.3.1.2 permits exactly one QoS per message: 'A PUBLISH Packet MUST NOT have both QoS bits set to 1.'" ;
+            rdfs:label "has QoS"@en ;
+            dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2, 3.3.1.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#hasSession
+MQTT:hasSession rdf:type owl:ObjectProperty ,
+                         owl:FunctionalProperty ;
+                rdfs:domain MQTT:MQTTConnection ;
+                rdfs:range MQTT:MQTTSession ;
+                rdfs:comment "Associates an MQTT connection with its session. Functional, because a Network Connection carries at most one Session; the converse does not hold, since 4.1 states that a session 'can continue across a sequence of Network Connections'." ;
+                rdfs:label "has session"@en ;
+                dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 4.1"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#hasSubscription
+MQTT:hasSubscription rdf:type owl:ObjectProperty ;
+                     rdfs:domain MQTT:MQTTSession ;
+                     rdfs:range MQTT:Subscription ;
+                     rdfs:comment "Associates an MQTT session with its subscriptions." ;
+                     rdfs:label "has subscription"@en ;
+                     dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 4.1"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#hasTopic
+MQTT:hasTopic rdf:type owl:ObjectProperty ,
+                       owl:FunctionalProperty ;
+              rdfs:domain MQTT:ApplicationMessage ;
+              rdfs:range MQTT:Topic ;
+              rdfs:comment "Associates an Application Message with its Topic Name. 1.2 defines the Topic Name as 'the label attached to an Application Message which is matched against the Subscriptions known to the Server' and lists exactly one Topic Name among the contents of an Application Message, hence functional. Until version 2.0.0 the domain was owl:Thing and the comment claimed subscriptions as well; subscriptions carry a Topic Filter, not a Topic Name (1.2)." ;
+              rdfs:label "has topic"@en ;
+              dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#hasTopicFilter
+MQTT:hasTopicFilter rdf:type owl:ObjectProperty ,
+                             owl:FunctionalProperty ;
+                    rdfs:domain MQTT:Subscription ;
+                    rdfs:range MQTT:TopicFilter ;
+                    rdfs:comment "Associates a subscription with its topic filter." ;
+                    rdfs:label "has topic filter"@en ;
+                    dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#hasVariableHeader
+MQTT:hasVariableHeader rdf:type owl:ObjectProperty ;
+                       rdfs:domain MQTT:MQTTControlPacket ;
+                       rdfs:range MQTT:VariableHeader ;
+                       rdfs:comment "Associates an MQTT Control Packet with its variable header." ;
+                       rdfs:label "has variable header"@en ;
+                       dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#hasWillMessage
+MQTT:hasWillMessage rdf:type owl:ObjectProperty ;
+                    rdfs:domain MQTT:Connect ;
+                    rdfs:range MQTT:WillMessage ;
+                    rdfs:comment "Associates a CONNECT packet with its will message." ;
+                    rdfs:label "has will message"@en ;
+                    dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.1.3.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#publishesTo
+MQTT:publishesTo rdf:type owl:ObjectProperty ;
+                 rdfs:domain MQTT:MQTTClient ;
+                 rdfs:range MQTT:Topic ;
+                 rdfs:comment "Indicates that a client publishes messages to a specific topic." ;
+                 rdfs:label "publishes to"@en ;
+                 dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#respondsTo
+MQTT:respondsTo rdf:type owl:ObjectProperty ;
+                rdfs:domain MQTT:MQTTControlPacket ;
+                rdfs:range MQTT:MQTTControlPacket ;
+                rdfs:comment "Associates response packets with their corresponding request packets." ;
+                rdfs:label "responds to"@en ;
+                dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.2.1"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#subscribesTo
+MQTT:subscribesTo rdf:type owl:ObjectProperty ;
+                  rdfs:domain MQTT:MQTTClient ;
+                  rdfs:range MQTT:TopicFilter ;
+                  rdfs:comment "Indicates that a client subscribes to messages matching a topic filter." ;
+                  rdfs:label "subscribes to"@en ;
+                  dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#usesConnection
+MQTT:usesConnection rdf:type owl:ObjectProperty ;
+                    rdfs:domain MQTT:MQTTClient ;
+                    rdfs:range MQTT:MQTTConnection ;
+                    rdfs:comment "Associates a client with its network connection." ;
+                    rdfs:label "uses connection"@en ;
+                    dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2"@en .
+
+
+#################################################################
+#    Data properties
+#################################################################
+
+###  http://www.w3id.org/hsu-aut/MQTT#authenticationData
+MQTT:authenticationData rdf:type owl:DatatypeProperty ;
+                        rdfs:domain MQTT:MQTTProperty ;
+                        rdfs:range xsd:base64Binary ;
+                        rdfs:comment "Binary data for authentication purposes." ;
+                        rdfs:label "authentication data"@en ;
+                        dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.1.2.11.10"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#authenticationMethod
+MQTT:authenticationMethod rdf:type owl:DatatypeProperty ;
+                          rdfs:domain MQTT:MQTTProperty ;
+                          rdfs:range xsd:string ;
+                          rdfs:comment "Specifies the authentication method used." ;
+                          rdfs:label "authentication method"@en ;
+                          dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.1.2.11.9"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#clientId
+MQTT:clientId rdf:type owl:DatatypeProperty ;
+              rdfs:domain MQTT:ClientIdentifier ;
+              rdfs:range xsd:string ;
+              rdfs:comment "The unique identifier string for an MQTT client." ;
+              rdfs:label "client identifier string"@en ;
+              dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.1.3.1"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#contentType
+MQTT:contentType rdf:type owl:DatatypeProperty ;
+                 rdfs:domain MQTT:ApplicationMessage ;
+                 rdfs:range xsd:string ;
+                 rdfs:comment "Describes the content type of the application message payload." ;
+                 rdfs:label "content type"@en ;
+                 dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.3.2.3.9"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#correlationData
+MQTT:correlationData rdf:type owl:DatatypeProperty ;
+                     rdfs:domain MQTT:ApplicationMessage ;
+                     rdfs:range xsd:base64Binary ;
+                     rdfs:comment "Binary data used for request-response correlation." ;
+                     rdfs:label "correlation data"@en ;
+                     dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.3.2.3.6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#dupFlag
+MQTT:dupFlag rdf:type owl:DatatypeProperty ;
+             rdfs:domain MQTT:FixedHeader ;
+             rdfs:range xsd:boolean ;
+             rdfs:comment "Indicates if this is a duplicate delivery of a PUBLISH packet." ;
+             rdfs:label "DUP flag"@en ;
+             dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.3.1.1"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#endpointUrl
+MQTT:endpointUrl rdf:type owl:DatatypeProperty ;
+                 rdfs:domain MQTT:ServerEndpoint ;
+                 rdfs:range xsd:anyURI ;
+                 rdfs:comment "The URL of the MQTT server endpoint." ;
+                 rdfs:label "endpoint URL"@en ;
+                 dcterms:source "Extension beyond MQTT Version 5.0: not defined in the standard. The word appears once, non-definitionally, in 3.1.4: 'a Server MAY support multiple protocols [...] on the same TCP port or other network endpoint'."@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#flags
+MQTT:flags rdf:type owl:DatatypeProperty ;
+           rdfs:domain MQTT:FixedHeader ;
+           rdfs:range xsd:unsignedByte ;
+           rdfs:comment "The flags field in the fixed header specific to each packet type." ;
+           rdfs:label "flags"@en ;
+           dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.1.3"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#hasPortNumber
+MQTT:hasPortNumber rdf:type owl:DatatypeProperty ;
+                   rdfs:domain MQTT:ServerEndpoint ;
+                   rdfs:range xsd:positiveInteger ;
+                   rdfs:comment "The port number of the MQTT server endpoint." ;
+                   rdfs:label "has port number"@en ;
+                   dcterms:source "Extension beyond MQTT Version 5.0: not defined in the standard. The word appears once, non-definitionally, in 3.1.4: 'a Server MAY support multiple protocols [...] on the same TCP port or other network endpoint'."@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#keepAlive
+MQTT:keepAlive rdf:type owl:DatatypeProperty ;
+               rdfs:domain MQTT:Connect ;
+               rdfs:range xsd:unsignedShort ;
+               rdfs:comment "The keep alive interval in seconds." ;
+               rdfs:label "keep alive"@en ;
+               dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.1.2.10"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#maximumPacketSize
+MQTT:maximumPacketSize rdf:type owl:DatatypeProperty ;
+                       rdfs:domain MQTT:MQTTProperty ;
+                       rdfs:range xsd:unsignedInt ;
+                       rdfs:comment "Maximum packet size that can be received." ;
+                       rdfs:label "maximum packet size"@en ;
+                       dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.1.2.11.4"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#messageExpiryInterval
+MQTT:messageExpiryInterval rdf:type owl:DatatypeProperty ;
+                           rdfs:domain MQTT:ApplicationMessage ;
+                           rdfs:range xsd:unsignedInt ;
+                           rdfs:comment "Message expiry interval in seconds." ;
+                           rdfs:label "message expiry interval"@en ;
+                           dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.3.2.3.3"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#packetIdentifier
+MQTT:packetIdentifier rdf:type owl:DatatypeProperty ;
+                      rdfs:domain MQTT:VariableHeader ;
+                      rdfs:range xsd:unsignedShort ;
+                      rdfs:comment "The packet identifier for control packets that require one." ;
+                      rdfs:label "packet identifier"@en ;
+                      dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.2.1"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#packetType
+MQTT:packetType rdf:type owl:DatatypeProperty ;
+                rdfs:domain MQTT:FixedHeader ;
+                rdfs:range xsd:unsignedByte ;
+                rdfs:comment "The MQTT Control Packet type field (4-bit value)." ;
+                rdfs:label "packet type"@en ;
+                dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.1.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#password
+MQTT:password rdf:type owl:DatatypeProperty ;
+              rdfs:domain MQTT:Connect ;
+              rdfs:range xsd:string ;
+              rdfs:comment "Password for client authentication." ;
+              rdfs:label "password"@en ;
+              dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.1.3.6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#payloadFormatIndicator
+MQTT:payloadFormatIndicator rdf:type owl:DatatypeProperty ;
+                            rdfs:domain MQTT:ApplicationMessage ;
+                            rdfs:range xsd:unsignedByte ;
+                            rdfs:comment "Indicates the format of the payload (0=bytes, 1=UTF-8)." ;
+                            rdfs:label "payload format indicator"@en ;
+                            dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.3.2.3.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#protocolName
+MQTT:protocolName rdf:type owl:DatatypeProperty ;
+                  rdfs:domain MQTT:Connect ;
+                  rdfs:range xsd:string ;
+                  rdfs:comment "The protocol name, must be 'MQTT'." ;
+                  rdfs:label "protocol name"@en ;
+                  dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.1.2.1"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#protocolVersion
+MQTT:protocolVersion rdf:type owl:DatatypeProperty ;
+                     rdfs:domain MQTT:Connect ;
+                     rdfs:range xsd:unsignedByte ;
+                     rdfs:comment "The protocol version, 5 for MQTT v5.0." ;
+                     rdfs:label "protocol version"@en ;
+                     dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.1.2.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#qosLevel
+MQTT:qosLevel rdf:type owl:DatatypeProperty ,
+                       owl:FunctionalProperty ;
+              rdfs:domain MQTT:QoS ;
+              rdfs:range xsd:unsignedByte ;
+              rdfs:comment "The numeric level of a Quality of Service, as given in Table 3-2: 0, 1 or 2. The value 3 is reserved and must not be used. Until version 2.0.0 this property carried rdfs:domain owl:Thing and was the only way to state a QoS; it now belongs to the three QoS individuals, which the classes QoS0Publication, QoS1Publication and QoS2Publication are defined over." ;
+              rdfs:label "QoS level"@en ;
+              dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.3.1.2, Tab. 3-2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#reasonCode
+MQTT:reasonCode rdf:type owl:DatatypeProperty ;
+                rdfs:domain MQTT:MQTTControlPacket ;
+                rdfs:range xsd:unsignedByte ;
+                rdfs:comment "Reason code indicating the result of an operation." ;
+                rdfs:label "reason code"@en ;
+                dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#reasonString
+MQTT:reasonString rdf:type owl:DatatypeProperty ;
+                  rdfs:domain MQTT:MQTTProperty ;
+                  rdfs:range xsd:string ;
+                  rdfs:comment "Human readable string describing the reason for a response." ;
+                  rdfs:label "reason string"@en ;
+                  dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.2.2.2, Tab. 2-4"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#receiveMaximum
+MQTT:receiveMaximum rdf:type owl:DatatypeProperty ;
+                    rdfs:domain MQTT:MQTTProperty ;
+                    rdfs:range xsd:unsignedShort ;
+                    rdfs:comment "Maximum number of QoS 1 and QoS 2 publications to process concurrently." ;
+                    rdfs:label "receive maximum"@en ;
+                    dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.1.2.11.3"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#remainingLength
+MQTT:remainingLength rdf:type owl:DatatypeProperty ;
+                     rdfs:domain MQTT:FixedHeader ;
+                     rdfs:range xsd:unsignedInt ;
+                     rdfs:comment "The remaining length field indicating bytes remaining in the packet." ;
+                     rdfs:label "remaining length"@en ;
+                     dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.1.4"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#responseTopic
+MQTT:responseTopic rdf:type owl:DatatypeProperty ;
+                   rdfs:domain MQTT:ApplicationMessage ;
+                   rdfs:range xsd:string ;
+                   rdfs:comment "Topic name for response messages in request-response pattern." ;
+                   rdfs:label "response topic"@en ;
+                   dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.3.2.3.5"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#retainFlag
+MQTT:retainFlag rdf:type owl:DatatypeProperty ;
+                rdfs:domain MQTT:FixedHeader ;
+                rdfs:range xsd:boolean ;
+                rdfs:comment "Indicates if the message should be retained by the server." ;
+                rdfs:label "RETAIN flag"@en ;
+                dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.3.1.3"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#sessionExpiryInterval
+MQTT:sessionExpiryInterval rdf:type owl:DatatypeProperty ;
+                           rdfs:domain MQTT:MQTTSession ;
+                           rdfs:range xsd:unsignedInt ;
+                           rdfs:comment "Session expiry interval in seconds." ;
+                           rdfs:label "session expiry interval"@en ;
+                           dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.1.2.11.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#sessionPresent
+MQTT:sessionPresent rdf:type owl:DatatypeProperty ;
+                    rdfs:domain MQTT:Connack ;
+                    rdfs:range xsd:boolean ;
+                    rdfs:comment "Indicates whether a session is present on the server." ;
+                    rdfs:label "session present"@en ;
+                    dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.2.2.1.1"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#subscriptionIdentifier
+MQTT:subscriptionIdentifier rdf:type owl:DatatypeProperty ;
+                            rdfs:domain MQTT:Subscription ;
+                            rdfs:range xsd:unsignedInt ;
+                            rdfs:comment "Identifier for the subscription." ;
+                            rdfs:label "subscription identifier"@en ;
+                            dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.8.2.1.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#topicAlias
+MQTT:topicAlias rdf:type owl:DatatypeProperty ;
+                rdfs:domain MQTT:Publish ;
+                rdfs:range xsd:unsignedShort ;
+                rdfs:comment "An integer value used to identify the Topic instead of using the Topic Name, in order to reduce the size of the PUBLISH packet. 3.3.2.3.4: the sender 'sets a Topic Alias mapping by including a non-zero length Topic Name and a Topic Alias in the PUBLISH packet'. Until version 2.0.0 the domain was ApplicationMessage; the alias is a shorthand inside the packet, not a property of the message." ;
+                rdfs:label "topic alias"@en ;
+                dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.3.2.3.4"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#topicAliasMaximum
+MQTT:topicAliasMaximum rdf:type owl:DatatypeProperty ;
+                       rdfs:domain MQTT:MQTTProperty ;
+                       rdfs:range xsd:unsignedShort ;
+                       rdfs:comment "Maximum topic alias value that can be used." ;
+                       rdfs:label "topic alias maximum"@en ;
+                       dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.1.2.11.5"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#topicFilterString
+MQTT:topicFilterString rdf:type owl:DatatypeProperty ;
+                       rdfs:domain MQTT:TopicFilter ;
+                       rdfs:range xsd:string ;
+                       rdfs:comment "The topic filter string that may contain wildcards." ;
+                       rdfs:label "topic filter string"@en ;
+                       dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 4.7"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#topicName
+MQTT:topicName rdf:type owl:DatatypeProperty ;
+               rdfs:domain MQTT:Topic ;
+               rdfs:range xsd:string ;
+               rdfs:comment "The topic name string." ;
+               rdfs:label "topic name"@en ;
+               dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2, 3.3.2.1"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#userName
+MQTT:userName rdf:type owl:DatatypeProperty ;
+              rdfs:domain MQTT:Connect ;
+              rdfs:range xsd:string ;
+              rdfs:comment "User name for client authentication." ;
+              rdfs:label "user name"@en ;
+              dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.1.3.5"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#userProperty
+MQTT:userProperty rdf:type owl:DatatypeProperty ;
+                  rdfs:domain MQTT:MQTTProperty ;
+                  rdfs:range xsd:string ;
+                  rdfs:comment "User-defined property as key-value pair." ;
+                  rdfs:label "user property"@en ;
+                  dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.2.2.2, Tab. 2-4"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#willDelayInterval
+MQTT:willDelayInterval rdf:type owl:DatatypeProperty ;
+                       rdfs:domain MQTT:WillMessage ;
+                       rdfs:range xsd:unsignedInt ;
+                       rdfs:comment "Delay interval before publishing the will message." ;
+                       rdfs:label "will delay interval"@en ;
+                       dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.1.3.2.2"@en .
+
+
+#################################################################
+#    Classes
+#################################################################
+
+###  http://www.w3id.org/hsu-aut/MQTT#ApplicationMessage
+MQTT:ApplicationMessage rdf:type owl:Class ;
+                        rdfs:comment "The data carried by the MQTT protocol for the application, containing payload, QoS, properties, and topic name." ;
+                        rdfs:label "application message"@en ;
+                        dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#Auth
+MQTT:Auth rdf:type owl:Class ;
+          rdfs:subClassOf MQTT:MQTTControlPacket ;
+          rdfs:comment "Authentication exchange control packet." ;
+          rdfs:label "AUTH packet"@en ;
+          dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.15"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ClientIdentifier
+MQTT:ClientIdentifier rdf:type owl:Class ;
+                      rdfs:comment "Unique identifier for an MQTT client." ;
+                      rdfs:label "client identifier"@en ;
+                      dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.1.3.1"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#Connack
+MQTT:Connack rdf:type owl:Class ;
+             rdfs:subClassOf MQTT:MQTTControlPacket ;
+             rdfs:comment "Connect acknowledgment control packet sent from server to client." ;
+             rdfs:label "CONNACK packet"@en ;
+             dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#Connect
+MQTT:Connect rdf:type owl:Class ;
+             rdfs:subClassOf MQTT:MQTTControlPacket ;
+             rdfs:comment "Connection request control packet sent from client to server." ;
+             rdfs:label "CONNECT packet"@en ;
+             dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.1"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#Disconnect
+MQTT:Disconnect rdf:type owl:Class ;
+                rdfs:subClassOf MQTT:MQTTControlPacket ;
+                rdfs:comment "Disconnect notification control packet." ;
+                rdfs:label "DISCONNECT packet"@en ;
+                dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.14"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#FixedHeader
+MQTT:FixedHeader rdf:type owl:Class ;
+                 rdfs:comment "Fixed header present in all MQTT control packets containing packet type, flags, and remaining length." ;
+                 rdfs:label "fixed header"@en ;
+                 dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.1.1"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#MalformedPacket
+MQTT:MalformedPacket rdf:type owl:Class ;
+                     rdfs:subClassOf MQTT:MQTTControlPacket ;
+                     rdfs:comment "A control packet that cannot be parsed according to the specification (1.2). Deliberately not a member of the disjointness axiom over the fifteen control packet types: a packet that cannot be parsed has no known type. Refer to 4.13.1 for error handling." ;
+                     rdfs:label "malformed packet"@en ;
+                     dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2, 4.13.1"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#MQTTClient
+MQTT:MQTTClient rdf:type owl:Class ;
+                rdfs:comment "A program or device that uses MQTT to publish and/or subscribe to messages." ;
+                rdfs:label "MQTT client"@en ;
+                dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#MQTTConnection
+MQTT:MQTTConnection rdf:type owl:Class ;
+                    rdfs:comment "Network connection between an MQTT client and server providing ordered, lossless, bidirectional communication." ;
+                    rdfs:label "network connection"@en ;
+                    dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2, 4.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#MQTTControlPacket
+MQTT:MQTTControlPacket rdf:type owl:Class ;
+                       rdfs:comment "Base class for all MQTT control packets exchanged between client and server." ;
+                       rdfs:label "MQTT control packet"@en ;
+                       dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2, 2.1"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#MQTTProperty
+MQTT:MQTTProperty rdf:type owl:Class ;
+                  rdfs:comment "Properties that can be included in MQTT control packets for extensibility." ;
+                  rdfs:label "MQTT property"@en ;
+                  dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.2.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#MQTTServer
+MQTT:MQTTServer rdf:type owl:Class ;
+                rdfs:comment "A program or device that acts as an intermediary between MQTT clients for message routing." ;
+                rdfs:label "MQTT server"@en ;
+                dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#MQTTSession
+MQTT:MQTTSession rdf:type owl:Class ;
+                 rdfs:comment "Stateful interaction between a client and server that can span multiple network connections." ;
+                 rdfs:label "MQTT session"@en ;
+                 dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2, 4.1"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#Payload
+MQTT:Payload rdf:type owl:Class ;
+             rdfs:comment "The payload section of an MQTT control packet containing packet-specific data." ;
+             rdfs:label "payload"@en ;
+             dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.3"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#Pingreq
+MQTT:Pingreq rdf:type owl:Class ;
+             rdfs:subClassOf MQTT:MQTTControlPacket ;
+             rdfs:comment "PING request control packet sent to test connectivity." ;
+             rdfs:label "PINGREQ packet"@en ;
+             dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.12"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#Pingresp
+MQTT:Pingresp rdf:type owl:Class ;
+              rdfs:subClassOf MQTT:MQTTControlPacket ;
+              rdfs:comment "PING response control packet." ;
+              rdfs:label "PINGRESP packet"@en ;
+              dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.13"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ProtocolError
+MQTT:ProtocolError rdf:type owl:Class ;
+                   rdfs:comment "An error that is detected after the packet has been parsed and found to contain data that is not allowed by the protocol or is inconsistent with the state of the Client or Server (1.2). Not a control packet, therefore no superclass under MQTTControlPacket. Refer to 4.13.1 for error handling." ;
+                   rdfs:label "protocol error"@en ;
+                   dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2, 4.13.1"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#Puback
+MQTT:Puback rdf:type owl:Class ;
+            rdfs:subClassOf MQTT:MQTTControlPacket ;
+            rdfs:comment "Publish acknowledgment control packet for QoS 1 messages." ;
+            rdfs:label "PUBACK packet"@en ;
+            dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.4"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#Pubcomp
+MQTT:Pubcomp rdf:type owl:Class ;
+             rdfs:subClassOf MQTT:MQTTControlPacket ;
+             rdfs:comment "Publish complete control packet (QoS 2 delivery part 3)." ;
+             rdfs:label "PUBCOMP packet"@en ;
+             dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.7"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#Publish
+MQTT:Publish rdf:type owl:Class ;
+             rdfs:subClassOf MQTT:MQTTControlPacket ;
+             rdfs:comment "Publish message control packet for sending application messages." ;
+             rdfs:label "PUBLISH packet"@en ;
+             dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.3"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#Pubrec
+MQTT:Pubrec rdf:type owl:Class ;
+            rdfs:subClassOf MQTT:MQTTControlPacket ;
+            rdfs:comment "Publish received control packet (QoS 2 delivery part 1)." ;
+            rdfs:label "PUBREC packet"@en ;
+            dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.5"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#Pubrel
+MQTT:Pubrel rdf:type owl:Class ;
+            rdfs:subClassOf MQTT:MQTTControlPacket ;
+            rdfs:comment "Publish release control packet (QoS 2 delivery part 2)." ;
+            rdfs:label "PUBREL packet"@en ;
+            dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#QoS
+MQTT:QoS rdf:type owl:Class ;
+         owl:equivalentClass [ rdf:type owl:Class ;
+                               owl:oneOf ( MQTT:QoS0
+                                           MQTT:QoS1
+                                           MQTT:QoS2
+                                         )
+                             ] ;
+         rdfs:comment "The level of assurance for the delivery of an Application Message (4.3). Exactly three levels exist, which is why this class is defined as the enumeration of its three individuals: Table 3-2 lists the values 0, 1 and 2 and marks the fourth bit combination as 'Reserved - must not be used'." ;
+         rdfs:label "quality of service"@en ;
+         dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.3.1.2, 4.3"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#QoS0Publication
+MQTT:QoS0Publication rdf:type owl:Class ;
+                     owl:equivalentClass [ rdf:type owl:Class ;
+                                           owl:intersectionOf ( MQTT:Publish
+                                                                [ rdf:type owl:Restriction ;
+                                                                  owl:onProperty MQTT:hasApplicationMessage ;
+                                                                  owl:someValuesFrom [ rdf:type owl:Restriction ;
+                                                                                       owl:onProperty MQTT:hasQoS ;
+                                                                                       owl:hasValue MQTT:QoS0
+                                                                                     ]
+                                                                ]
+                                                              )
+                                         ] ;
+                     rdfs:subClassOf MQTT:Publish ;
+                     rdfs:comment "A PUBLISH packet whose Application Message is delivered with QoS 0, at most once delivery (4.3.1). Defined rather than asserted: the class is the set of PUBLISH packets whose message has the QoS individual QoS0. Membership is therefore derivable in both directions, and the disjointness of the three classes follows from the functionality of hasQoS and hasApplicationMessage together with the distinctness of the three QoS individuals." ;
+                     rdfs:label "QoS 0 publication"@en ;
+                     dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 4.3.1"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#QoS1Publication
+MQTT:QoS1Publication rdf:type owl:Class ;
+                     owl:equivalentClass [ rdf:type owl:Class ;
+                                           owl:intersectionOf ( MQTT:Publish
+                                                                [ rdf:type owl:Restriction ;
+                                                                  owl:onProperty MQTT:hasApplicationMessage ;
+                                                                  owl:someValuesFrom [ rdf:type owl:Restriction ;
+                                                                                       owl:onProperty MQTT:hasQoS ;
+                                                                                       owl:hasValue MQTT:QoS1
+                                                                                     ]
+                                                                ]
+                                                              )
+                                         ] ;
+                     rdfs:subClassOf MQTT:Publish ;
+                     rdfs:comment "A PUBLISH packet whose Application Message is delivered with QoS 1, at least once delivery (4.3.2). Defined rather than asserted: the class is the set of PUBLISH packets whose message has the QoS individual QoS1. Membership is therefore derivable in both directions, and the disjointness of the three classes follows from the functionality of hasQoS and hasApplicationMessage together with the distinctness of the three QoS individuals." ;
+                     rdfs:label "QoS 1 publication"@en ;
+                     dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 4.3.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#QoS2Publication
+MQTT:QoS2Publication rdf:type owl:Class ;
+                     owl:equivalentClass [ rdf:type owl:Class ;
+                                           owl:intersectionOf ( MQTT:Publish
+                                                                [ rdf:type owl:Restriction ;
+                                                                  owl:onProperty MQTT:hasApplicationMessage ;
+                                                                  owl:someValuesFrom [ rdf:type owl:Restriction ;
+                                                                                       owl:onProperty MQTT:hasQoS ;
+                                                                                       owl:hasValue MQTT:QoS2
+                                                                                     ]
+                                                                ]
+                                                              )
+                                         ] ;
+                     rdfs:subClassOf MQTT:Publish ;
+                     rdfs:comment "A PUBLISH packet whose Application Message is delivered with QoS 2, exactly once delivery (4.3.3). Defined rather than asserted: the class is the set of PUBLISH packets whose message has the QoS individual QoS2. Membership is therefore derivable in both directions, and the disjointness of the three classes follows from the functionality of hasQoS and hasApplicationMessage together with the distinctness of the three QoS individuals." ;
+                     rdfs:label "QoS 2 publication"@en ;
+                     dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 4.3.3"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#RetainedMessage
+MQTT:RetainedMessage rdf:type owl:Class ;
+                     rdfs:subClassOf MQTT:ApplicationMessage ;
+                     rdfs:comment "Application message that is retained by the server for future subscribers." ;
+                     rdfs:label "retained message"@en ;
+                     dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.3.1.3"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ServerEndpoint
+MQTT:ServerEndpoint rdf:type owl:Class ;
+                    rdfs:comment "Network endpoint configuration for an MQTT server." ;
+                    rdfs:label "server endpoint"@en ;
+                    dcterms:source "Extension beyond MQTT Version 5.0: not defined in the standard. The word appears once, non-definitionally, in 3.1.4: 'a Server MAY support multiple protocols [...] on the same TCP port or other network endpoint'."@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#SharedSubscription
+MQTT:SharedSubscription rdf:type owl:Class ;
+                        rdfs:subClassOf MQTT:Subscription ;
+                        rdfs:comment "A Subscription that can be associated with more than one subscribing Session, so that a matching publication is sent to only one of them (1.2, 4.8.2). It is identified by a Topic Filter of the form $share/{ShareName}/{filter}. Until version 2.0.0 this class was declared disjoint with WildcardSubscription; that is refuted by 4.8.2, where the {filter} part has 'the same syntax and semantics as a Topic Filter in a non-shared subscription' and the example $share/consumer1/sport/tennis/+ contains a wildcard. Being shared and containing a wildcard are independent classifications." ;
+                        rdfs:label "shared subscription"@en ;
+                        dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2, 4.8.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#Suback
+MQTT:Suback rdf:type owl:Class ;
+            rdfs:subClassOf MQTT:MQTTControlPacket ;
+            rdfs:comment "Subscribe acknowledgment control packet." ;
+            rdfs:label "SUBACK packet"@en ;
+            dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.9"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#Subscribe
+MQTT:Subscribe rdf:type owl:Class ;
+               rdfs:subClassOf MQTT:MQTTControlPacket ;
+               rdfs:comment "Subscribe request control packet." ;
+               rdfs:label "SUBSCRIBE packet"@en ;
+               dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.8"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#Subscription
+MQTT:Subscription rdf:type owl:Class ;
+                  rdfs:subClassOf [ rdf:type owl:Restriction ;
+                                    owl:onProperty MQTT:hasTopicFilter ;
+                                    owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                    owl:onClass MQTT:TopicFilter
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty MQTT:hasMaximumQoS ;
+                                    owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                    owl:onClass MQTT:QoS
+                                  ] ;
+                  rdfs:comment "A Subscription comprises a Topic Filter and a maximum QoS, and is associated with a single Session (1.2); the two cardinalities state the first half of that sentence. The single Session is stated as a general axiom over the non-shared part of this class, because 1.2 and 4.8.2 allow a Shared Subscription to be associated with more than one Session. The further requirement that each Subscription within a Session has a different Topic Filter is a key constraint over a pair and is not expressible in OWL 2; it belongs in SHACL." ;
+                  rdfs:label "subscription"@en ;
+                  dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#Topic
+MQTT:Topic rdf:type owl:Class ;
+           rdfs:comment "Label attached to application messages for routing by the server." ;
+           rdfs:label "topic"@en ;
+           dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2, 4.7"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#TopicFilter
+MQTT:TopicFilter rdf:type owl:Class ;
+                 rdfs:comment "Expression in a subscription indicating interest in topics, may contain wildcards." ;
+                 rdfs:label "topic filter"@en ;
+                 dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2, 4.7"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#Unsuback
+MQTT:Unsuback rdf:type owl:Class ;
+              rdfs:subClassOf MQTT:MQTTControlPacket ;
+              rdfs:comment "Unsubscribe acknowledgment control packet." ;
+              rdfs:label "UNSUBACK packet"@en ;
+              dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.11"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#Unsubscribe
+MQTT:Unsubscribe rdf:type owl:Class ;
+                 rdfs:subClassOf MQTT:MQTTControlPacket ;
+                 rdfs:comment "Unsubscribe request control packet." ;
+                 rdfs:label "UNSUBSCRIBE packet"@en ;
+                 dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.10"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#VariableHeader
+MQTT:VariableHeader rdf:type owl:Class ;
+                    rdfs:comment "Variable header component containing packet-specific fields like packet identifier and properties." ;
+                    rdfs:label "variable header"@en ;
+                    dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#WildcardSubscription
+MQTT:WildcardSubscription rdf:type owl:Class ;
+                          rdfs:subClassOf MQTT:Subscription ;
+                          rdfs:comment "Subscription with a topic filter containing wildcard characters." ;
+                          rdfs:label "wildcard subscription"@en ;
+                          dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2, 4.7.1"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#WillMessage
+MQTT:WillMessage rdf:type owl:Class ;
+                 rdfs:subClassOf MQTT:ApplicationMessage ;
+                 rdfs:comment "Message published by the server when a client disconnects abnormally." ;
+                 rdfs:label "will message"@en ;
+                 dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2, 3.1.3.2"@en .
+
+
+#################################################################
+#    Individuals
+#################################################################
+
+###  http://www.w3id.org/hsu-aut/MQTT#QoS0
+MQTT:QoS0 rdf:type owl:NamedIndividual ,
+                   MQTT:QoS ;
+          MQTT:qosLevel "0"^^xsd:unsignedByte ;
+          rdfs:comment "QoS 0, at most once delivery: the message is delivered according to the capabilities of the underlying network, no response is sent by the receiver and no retry is performed by the sender (4.3.1)." ;
+          rdfs:label "QoS 0"@en ;
+          dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 4.3.1"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#QoS1
+MQTT:QoS1 rdf:type owl:NamedIndividual ,
+                   MQTT:QoS ;
+          MQTT:qosLevel "1"^^xsd:unsignedByte ;
+          rdfs:comment "QoS 1, at least once delivery: the message is acknowledged, and the sender retransmits until it is acknowledged, so the message arrives at least once (4.3.2)." ;
+          rdfs:label "QoS 1"@en ;
+          dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 4.3.2"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#QoS2
+MQTT:QoS2 rdf:type owl:NamedIndividual ,
+                   MQTT:QoS ;
+          MQTT:qosLevel "2"^^xsd:unsignedByte ;
+          rdfs:comment "QoS 2, exactly once delivery: the four-part handshake of PUBLISH, PUBREC, PUBREL and PUBCOMP ensures that the message arrives exactly once (4.3.3)." ;
+          rdfs:label "QoS 2"@en ;
+          dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 4.3.3"@en .
+
+
+#################################################################
+#    General axioms
+#################################################################
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( MQTT:Auth
+                MQTT:Connack
+                MQTT:Connect
+                MQTT:Disconnect
+                MQTT:Pingreq
+                MQTT:Pingresp
+                MQTT:Puback
+                MQTT:Pubcomp
+                MQTT:Publish
+                MQTT:Pubrec
+                MQTT:Pubrel
+                MQTT:Suback
+                MQTT:Subscribe
+                MQTT:Unsuback
+                MQTT:Unsubscribe
+              )
+] .
+
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( MQTT:QoS0Publication
+                MQTT:QoS1Publication
+                MQTT:QoS2Publication
+              )
+] .
+
+
+# The three QoS levels are pairwise different. Without this axiom the
+# enumeration above would not keep them apart, and the disjointness of the
+# three publication classes would not follow.
+[ rdf:type owl:AllDifferent ;
+  owl:members ( MQTT:QoS0
+                MQTT:QoS1
+                MQTT:QoS2
+              )
+] .
+
+
+# 1.2: "A Subscription is associated with a single Session." The axiom is
+# restricted to subscriptions that are not shared, because the same clause
+# and 4.8.2 allow a Shared Subscription to be associated with more than one
+# Session. Stated over the inverse of hasSubscription, whose domain is the
+# session side.
+[ rdf:type owl:Class ;
+  owl:intersectionOf ( MQTT:Subscription
+                       [ rdf:type owl:Class ;
+                         owl:complementOf MQTT:SharedSubscription
+                       ]
+                     )
+] rdfs:subClassOf [ rdf:type owl:Restriction ;
+                    owl:onProperty [ owl:inverseOf MQTT:hasSubscription ] ;
+                    owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                    owl:onClass MQTT:MQTTSession
+                  ] .
