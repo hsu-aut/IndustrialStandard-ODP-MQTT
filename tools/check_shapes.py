@@ -36,8 +36,10 @@ EXPECTED: dict[str, set[str]] = {
     "invalid-topic-name-wildcard.ttl": {
         "TopicNameNoWildcards:Violation",
     },
+    # Since 6.0.0 the response topic is a MQTT:Topic, so this fixture has to
+    # trip the one topic name shape -- not a shape of its own.
     "invalid-response-topic-wildcard.ttl": {
-        "ResponseTopicNoWildcards:Violation",
+        "TopicNameNoWildcards:Violation",
     },
     "invalid-same-filter-node.ttl": {
         "SubscriptionsShareAFilterNode:Violation",

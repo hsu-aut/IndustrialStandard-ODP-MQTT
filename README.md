@@ -39,7 +39,12 @@ covers the whole normative vocabulary of the standard:
   the disallowed Unicode code points.
 - **The packet structure** — fixed header, variable header, payload, properties,
   reason codes, and all fifteen control packet types of clause 2.1.2, declared
-  pairwise disjoint.
+  pairwise disjoint and annotated with their wire value from Table 2-1. Which
+  packet types carry a payload is stated as cardinalities from **Table 2-5**
+  (clause 2.3): required for CONNECT, SUBSCRIBE, SUBACK, UNSUBSCRIBE and
+  UNSUBACK, optional for PUBLISH, none for the other nine. What is *in* a
+  payload is said on the packet, not on the payload: six packet types put six
+  different things there.
 - **Topics and subscriptions** — topics, topic filters, sessions, subscriptions,
   and the cardinalities that clause 1.2 states for them.
 - **Quality of service** — the three levels of clause 4.3 as an enumerated class
@@ -117,7 +122,7 @@ trusted:
 
 | Constraint | Clause | Shape |
 |---|---|---|
-| Wildcards must not appear in a topic name | 4.7.1, [MQTT-4.7.0-1] | `TopicNameNoWildcards`, and `ResponseTopicNoWildcards` for the response topic of 3.3.2.3.5 |
+| Wildcards must not appear in a topic name | 4.7.1, [MQTT-4.7.0-1] | `TopicNameNoWildcards` — which since 6.0.0 also covers the response topic of 3.3.2.3.5 and the will topic, because both are a `MQTT:Topic` |
 | Each subscription within a session has a different topic filter | 1.2 | `SubscriptionsShareAFilterNode`, `SubscriptionsShareAFilterString` |
 | A shared subscription's topic filter has the form `$share/{ShareName}/{filter}` | 4.8.2, [MQTT-4.8.2-1], [MQTT-4.8.2-2] | `SharedSubscriptionFilterPrefix` |
 | A reason code appears only in the packet types Table 2-6 lists for it | 2.4 | `ReasonCodeNotAllowedInPacketType` |
@@ -148,6 +153,7 @@ checking it.
 
 | Version | Change |
 |---|---|
+| **6.0.0** | The packet structure gets teeth, and three shapes are made consistent. **Table 2-5** (clause 2.3) is now in the ontology: `hasPayload` is functional, since clause 2.1 gives a packet at most one payload, the five packet types that require one carry a minimum cardinality, and the nine that must not have one carry `max 0` — a PINGREQ with a payload was permitted up to 5.0.0 and is an error now. The wire value of a packet type moves from a datatype property on the fixed header to the annotation `packetTypeValue` **on the class** (Table 2-1), and `flags` is **removed**: clause 2.1.3 describes it as the byte that holds DUP, QoS and RETAIN, all three of which are modelled separately. `payloadFormatIndicator` becomes the enumerated class `PayloadFormat` with two individuals, since 3.3.2.3.2 lists exactly two values — the construction QoS and Retain Handling already had. `responseTopic` becomes `hasResponseTopic` with range `MQTT:Topic`: a response topic *is* a topic name, and the SHACL layer needs one shape for the wildcard prohibition instead of two. `subscribesTo` and `connectsTo` are **derived** from property chains instead of asserted, so the convenient edge and the long path through session and subscription can no longer disagree; `publishesTo` stays asserted, because deriving it would need a sender and a network connection carries both directions — Table 2-1 gives PUBLISH as "Client to Server or Server to Client". `MalformedPacket` and `ProtocolError` point at reason codes 0x81 and 0x82 with `rdfs:seeAlso`. |
 | **5.0.0** | Three shapes corrected where a class, a literal or a datatype was the wrong instrument. `clientId` moves to `MQTT:MQTTClient`, functional, with `owl:hasKey` for clause 3.1.3.1 ("Each Client connecting to the Server has a unique ClientID"); the class `ClientIdentifier` and `hasClientIdentifier` are **removed** — the ClientID assigned by the server was a plain literal next to them. A **User Property is now a class** `UserProperty` with `propertyName` and `propertyValue`, exactly one each, reached through `hasUserProperty`: clause 2.2.2.2 calls it a UTF-8 **String Pair** and allows the same name to appear more than once, which a single `xsd:string` could express neither of. `password` becomes `xsd:base64Binary`, because 3.1.3.6 says "The Password field is Binary Data" — MQTT 5.0 changed that from 3.1.1 and the ontology had not followed. **Breaking fix:** the domain of `serverReference` moves from `Connack` to `MQTTProperty`; with `Connack` a DISCONNECT carrying a Server Reference (3.14.2.2.5, 4.11) made a model **inconsistent**, since the fifteen packet types are pairwise disjoint. The division behind `MQTTProperty` is now written into its comment: the properties of Table 2-4 that appear in several packet types and have no carrier of their own live there, the other twenty live on the entity they are about. |
 | **4.0.0** | The server address is flat. `MQTT:endpointUrl` moves to `MQTT:MQTTServer`; the class `ServerEndpoint`, the property `hasEndpoint` and the property `hasPortNumber` are **removed**. Scheme and port are part of the URI and are no longer stated twice — the old form allowed a port in the URI and a `hasPortNumber` to contradict each other, with nothing able to detect it. The flat form is the one the sibling pattern WADL uses for `hasBase`. The difference to OPC UA is deliberate: there an `EndpointDescription` is a structure of the standard itself (Part 4) carrying security mode, policy and identity tokens, whereas MQTT 5.0 defines no endpoint structure at all. |
 | **3.0.0** | All 45 reason codes of Table 2-6 as individuals of an enumerated class `ReasonCode`, parsed from the standard's own table rather than transcribed. `SuccessReasonCode` and `ErrorReasonCode` defined over the value (clause 2.4 draws the line at 0x80), so membership is derived: 35 error codes, 10 success codes. `hasReasonCode` relates a packet to its code, restricted to at most one on the seven packets that carry a single code, unrestricted on SUBACK and UNSUBACK which carry a list. `grantsQoS` links the three *Granted QoS* codes to the QoS levels. `appliesToPacket` records the packet types per code. **Breaking:** `reasonCode` is renamed to `reasonCodeValue` and its domain moves from `MQTTControlPacket` to `ReasonCode` — the value belongs to the code, the code to the packet. Keeping both would have been the same mistake that the QoS rework fixed in 2.0.0. |
@@ -163,11 +169,11 @@ version so that future changes cannot surprise you:
 
 ```turtle
 <http://example.org/my-ontology#> rdf:type owl:Ontology ;
-    owl:imports <https://raw.githubusercontent.com/hsu-aut/IndustrialStandard-ODP-MQTT/v5.0.0/mqtt.ttl> .
+    owl:imports <https://raw.githubusercontent.com/hsu-aut/IndustrialStandard-ODP-MQTT/v6.0.0/mqtt.ttl> .
 ```
 
 The ontology IRI is `http://www.w3id.org/hsu-aut/MQTT`, version IRIs are of the
-form `http://www.w3id.org/hsu-aut/MQTT/5.0.0`. **Note:** unlike the other
+form `http://www.w3id.org/hsu-aut/MQTT/6.0.0`. **Note:** unlike the other
 patterns in the list above, this one does not have a w3id redirect yet, so those
 IRIs do not resolve — use the raw URL above until it does.
 
@@ -180,7 +186,7 @@ under HermiT and free of unsatisfiable classes. The shapes are checked with
 `tools/check_shapes.py`, including the control that `mqtt.ttl` on its own — 51
 individuals, among them all 45 reason codes — does not trip over its own shapes.
 The axioms added since 1.0.0 are
-backed by nineteen reasoner probes, among them a case that has to fail, a probe
+backed by twenty-four reasoner probes, among them a case that has to fail, a probe
 showing that the new minimum cardinalities do not invalidate existing data, and
 two showing that disjointness which used to be asserted is now derived,
 documented in `docs/design/MQTT-2.0.0-conceptualization.md` of the

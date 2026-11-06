@@ -47,10 +47,14 @@ ex:Filter_Shared rdf:type MQTT:TopicFilter ;
 ex:Message_Start rdf:type MQTT:ApplicationMessage ;
     MQTT:hasTopic ex:Topic_Start ;
     MQTT:hasQoS MQTT:QoS1 ;
-    MQTT:responseTopic "amr-1/skills/drive/result" .
+    MQTT:hasPayloadFormat MQTT:PayloadFormatUTF8 ;
+    MQTT:hasResponseTopic ex:Topic_Result .
 
 ex:Topic_Start rdf:type MQTT:Topic ;
     MQTT:topicName "amr-1/skills/drive/start" .
+
+ex:Topic_Result rdf:type MQTT:Topic ;
+    MQTT:topicName "amr-1/skills/drive/result" .
 
 ex:Publish_1 rdf:type MQTT:Publish ;
     MQTT:hasApplicationMessage ex:Message_Start .
@@ -61,7 +65,11 @@ ex:Connack_1 rdf:type MQTT:Connack ;
     MQTT:hasReasonCode MQTT:ReasonCodeSuccess .
 
 ex:Suback_1 rdf:type MQTT:Suback ;
-    MQTT:hasReasonCode MQTT:ReasonCodeGrantedQoS1 .
+    MQTT:hasReasonCode MQTT:ReasonCodeGrantedQoS1 ;
+    MQTT:hasPayload ex:Suback_Payload .
+
+### Tab. 2-5: a SUBACK requires a Payload, a CONNACK must not have one
+ex:Suback_Payload rdf:type MQTT:Payload .
 
 ex:Disconnect_1 rdf:type MQTT:Disconnect ;
     MQTT:hasReasonCode MQTT:ReasonCodeSessionTakenOver .
