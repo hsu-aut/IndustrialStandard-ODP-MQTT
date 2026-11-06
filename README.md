@@ -111,11 +111,11 @@ version so that future changes cannot surprise you:
 
 ```turtle
 <http://example.org/my-ontology#> rdf:type owl:Ontology ;
-    owl:imports <https://raw.githubusercontent.com/hsu-aut/IndustrialStandard-ODP-MQTT/v6.0.0/mqtt.ttl> .
+    owl:imports <https://raw.githubusercontent.com/hsu-aut/IndustrialStandard-ODP-MQTT/v6.0.1/mqtt.ttl> .
 ```
 
 The ontology IRI is `http://www.w3id.org/hsu-aut/MQTT`, version IRIs are of the
-form `http://www.w3id.org/hsu-aut/MQTT/6.0.0`.
+form `http://www.w3id.org/hsu-aut/MQTT/6.0.1`.
 
 Of course you can also clone this repository and import a local copy.
 

@@ -10,9 +10,9 @@
 @base <http://www.w3id.org/hsu-aut/MQTT#> .
 
 <http://www.w3id.org/hsu-aut/MQTT> rdf:type owl:Ontology ;
-                                    owl:versionIRI <http://www.w3id.org/hsu-aut/MQTT/6.0.0> ;
+                                    owl:versionIRI <http://www.w3id.org/hsu-aut/MQTT/6.0.1> ;
                                     rdfs:comment "MQTT (Message Queuing Telemetry Transport) Ontology representing the MQTT v5.0 protocol standard as defined by OASIS. This ontology captures the core concepts of MQTT including clients, servers, connections, control packets, topics, subscriptions, and message exchange patterns. Every entity carries a dcterms:source annotation naming the clause of the standard it reflects." ;
-                                    owl:versionInfo "6.0.0" ;
+                                    owl:versionInfo "6.0.1" ;
                                     rdfs:label "MQTT"@en ;
                                     dcterms:title "MQTT - An Ontology Design Pattern for the MQTT Version 5.0 Protocol"@en ;
                                     dcterms:description "Ontology design pattern of the OASIS MQTT Version 5.0 standard. It covers the normative vocabulary of clause 1.2, the fifteen control packet types of clause 2.1.2, topics and topic filters, sessions and subscriptions, and the three quality of service levels, so that publish/subscribe communication can be described in a standard-based way."@en ;
@@ -1976,8 +1976,7 @@ MQTT:ReasonCodeWildcardSubscriptionsNotSupported rdf:type owl:NamedIndividual ,
                   ] .
 
 
-# Die drei Retain-Handling-Werte sind paarweise verschieden, wie die drei
-# QoS-Stufen.
+# The three retain handling values are pairwise different.
 [ rdf:type owl:AllDifferent ;
   owl:members ( MQTT:RetainHandling0
                 MQTT:RetainHandling1
@@ -1986,9 +1985,8 @@ MQTT:ReasonCodeWildcardSubscriptionsNotSupported rdf:type owl:NamedIndividual ,
 ] .
 
 
-# Die 45 Reason Codes der Tabelle 2-6 sind paarweise verschieden. Notwendig,
-# weil drei von ihnen denselben Wert 0x00 tragen und ein Reasoner sie sonst
-# zusammenfallen lassen koennte.
+# The 45 reason codes of Table 2-6 are pairwise different; three of them carry
+# the same value 0x00.
 [ rdf:type owl:AllDifferent ;
   owl:members (
                 MQTT:ReasonCodeSuccess
