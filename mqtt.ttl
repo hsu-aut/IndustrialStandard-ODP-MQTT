@@ -10,9 +10,9 @@
 @base <http://www.w3id.org/hsu-aut/MQTT#> .
 
 <http://www.w3id.org/hsu-aut/MQTT> rdf:type owl:Ontology ;
-                                    owl:versionIRI <http://www.w3id.org/hsu-aut/MQTT/2.1.0> ;
+                                    owl:versionIRI <http://www.w3id.org/hsu-aut/MQTT/3.0.0> ;
                                     rdfs:comment "MQTT (Message Queuing Telemetry Transport) Ontology representing the MQTT v5.0 protocol standard as defined by OASIS. This ontology captures the core concepts of MQTT including clients, servers, connections, control packets, topics, subscriptions, and message exchange patterns. Every entity carries a dcterms:source annotation naming the clause of the standard it reflects; the four entities around the server address carry an explicit note that they go beyond the standard instead." ;
-                                    owl:versionInfo "2.1.0" ;
+                                    owl:versionInfo "3.0.0" ;
                                     rdfs:label "MQTT"@en ;
                                     dcterms:title "MQTT - An Ontology Design Pattern for the MQTT Version 5.0 Protocol"@en ;
                                     dcterms:description "Ontology design pattern of the OASIS MQTT Version 5.0 standard. It covers the normative vocabulary of clause 1.2, the fifteen control packet types of clause 2.1.2, topics and topic filters, sessions and subscriptions, and the three quality of service levels, so that publish/subscribe communication can be described in a standard-based way."@en ;
@@ -44,6 +44,16 @@ dcterms:source rdf:type owl:AnnotationProperty .
 dcterms:bibliographicCitation rdf:type owl:AnnotationProperty .
 vann:preferredNamespacePrefix rdf:type owl:AnnotationProperty .
 vann:preferredNamespaceUri rdf:type owl:AnnotationProperty .
+
+###  http://www.w3id.org/hsu-aut/MQTT#appliesToPacket
+# Records which control packet types a Reason Code is allowed in (2.4, Table
+# 2-6). An annotation property on purpose: the table states 45 Reason Codes
+# against 9 packet types, and expressing that in OWL would need one axiom per
+# pair without any reasoning benefit. A SHACL shape can check it.
+MQTT:appliesToPacket rdf:type owl:AnnotationProperty ;
+                     rdfs:label "applies to packet"@en ;
+                     rdfs:comment "The control packet types in which a Reason Code may appear (2.4, Table 2-6)." ;
+                     dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
 
 #################################################################
 #    Object Properties
@@ -142,6 +152,15 @@ MQTT:hasQoS rdf:type owl:ObjectProperty ,
             dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2, 3.3.1.2"@en .
 
 
+###  http://www.w3id.org/hsu-aut/MQTT#hasReasonCode
+MQTT:hasReasonCode rdf:type owl:ObjectProperty ;
+                   rdfs:domain MQTT:MQTTControlPacket ;
+                   rdfs:range MQTT:ReasonCode ;
+                   rdfs:comment "Relates a control packet to a Reason Code it carries. 2.4: CONNACK, PUBACK, PUBREC, PUBREL, PUBCOMP, DISCONNECT and AUTH carry a single Reason Code in the Variable Header, while SUBACK and UNSUBACK carry a list of one or more in the Payload. Not functional for that reason; the seven single-code packets are restricted to at most one. Which Reason Codes are allowed in which packet is recorded on the Reason Code individuals with the annotation appliesToPacket -- an annotation, so no reasoner checks it; a SHACL shape can." ;
+                   rdfs:label "has reason code"@en ;
+                   dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4"@en .
+
+
 ###  http://www.w3id.org/hsu-aut/MQTT#hasRequestedTopicFilter
 MQTT:hasRequestedTopicFilter rdf:type owl:ObjectProperty ;
                              rdfs:domain MQTT:Subscribe ;
@@ -149,6 +168,16 @@ MQTT:hasRequestedTopicFilter rdf:type owl:ObjectProperty ;
                              rdfs:comment "Relates a SUBSCRIBE packet to a Topic Filter it requests a subscription for. 3.8.3: 'The Payload of a SUBSCRIBE packet contains a list of Topic Filters indicating the Topics to which the Client wants to subscribe.' Not functional: the payload carries a list. Until version 2.1.0 the packet side of subscribing had no link to the filter at all, while the publishing side reached its topic through the application message." ;
                              rdfs:label "has requested topic filter"@en ;
                              dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.8.3"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#grantsQoS
+MQTT:grantsQoS rdf:type owl:ObjectProperty ,
+                        owl:FunctionalProperty ;
+               rdfs:domain MQTT:ReasonCode ;
+               rdfs:range MQTT:QoS ;
+               rdfs:comment "Relates one of the three SUBACK Reason Codes Granted QoS 0, 1 and 2 to the QoS level it grants (2.4, Table 2-6; 3.9.3). Only those three Reason Codes carry it." ;
+               rdfs:label "grants QoS"@en ;
+               dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
 
 
 ###  http://www.w3id.org/hsu-aut/MQTT#hasRetainHandling
@@ -499,13 +528,14 @@ MQTT:qosLevel rdf:type owl:DatatypeProperty ,
               dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.3.1.2, Tab. 3-2"@en .
 
 
-###  http://www.w3id.org/hsu-aut/MQTT#reasonCode
-MQTT:reasonCode rdf:type owl:DatatypeProperty ;
-                rdfs:domain MQTT:MQTTControlPacket ;
-                rdfs:range xsd:unsignedByte ;
-                rdfs:comment "Reason code indicating the result of an operation." ;
-                rdfs:label "reason code"@en ;
-                dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4"@en .
+###  http://www.w3id.org/hsu-aut/MQTT#reasonCodeValue
+MQTT:reasonCodeValue rdf:type owl:DatatypeProperty ,
+                              owl:FunctionalProperty ;
+                     rdfs:domain MQTT:ReasonCode ;
+                     rdfs:range xsd:unsignedByte ;
+                     rdfs:comment "The one byte unsigned value of a Reason Code. 2.4: 'Reason Codes less than 0x80 indicate successful completion of an operation [...] values of 0x80 or greater indicate failure.' Until version 3.0.0 this property was called reasonCode and carried the value on the packet itself; it now belongs to the Reason Code, and packets point at the Reason Code with hasReasonCode. Two Reason Codes may share a value -- 0x00 is Success, Normal disconnection and Granted QoS 0 -- so the value does not identify them." ;
+                     rdfs:label "reason code value"@en ;
+                     dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
 
 
 ###  http://www.w3id.org/hsu-aut/MQTT#reasonString
@@ -776,7 +806,12 @@ MQTT:ApplicationMessage rdf:type owl:Class ;
 
 ###  http://www.w3id.org/hsu-aut/MQTT#Auth
 MQTT:Auth rdf:type owl:Class ;
-          rdfs:subClassOf MQTT:MQTTControlPacket ;
+          rdfs:subClassOf MQTT:MQTTControlPacket ,
+                          [ rdf:type owl:Restriction ;
+                            owl:onProperty MQTT:hasReasonCode ;
+                            owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                            owl:onClass MQTT:ReasonCode
+                          ] ;
           rdfs:comment "Authentication exchange control packet." ;
           rdfs:label "AUTH packet"@en ;
           dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.15"@en .
@@ -791,7 +826,12 @@ MQTT:ClientIdentifier rdf:type owl:Class ;
 
 ###  http://www.w3id.org/hsu-aut/MQTT#Connack
 MQTT:Connack rdf:type owl:Class ;
-             rdfs:subClassOf MQTT:MQTTControlPacket ;
+             rdfs:subClassOf MQTT:MQTTControlPacket ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty MQTT:hasReasonCode ;
+                               owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                               owl:onClass MQTT:ReasonCode
+                             ] ;
              rdfs:comment "Connect acknowledgment control packet sent from server to client." ;
              rdfs:label "CONNACK packet"@en ;
              dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.2"@en .
@@ -814,7 +854,12 @@ MQTT:DisallowedUnicodeCodePoint rdf:type owl:Class ;
 
 ###  http://www.w3id.org/hsu-aut/MQTT#Disconnect
 MQTT:Disconnect rdf:type owl:Class ;
-                rdfs:subClassOf MQTT:MQTTControlPacket ;
+                rdfs:subClassOf MQTT:MQTTControlPacket ,
+                                [ rdf:type owl:Restriction ;
+                                  owl:onProperty MQTT:hasReasonCode ;
+                                  owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                  owl:onClass MQTT:ReasonCode
+                                ] ;
                 rdfs:comment "Disconnect notification control packet." ;
                 rdfs:label "DISCONNECT packet"@en ;
                 dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.14"@en .
@@ -909,7 +954,12 @@ MQTT:ProtocolError rdf:type owl:Class ;
 
 ###  http://www.w3id.org/hsu-aut/MQTT#Puback
 MQTT:Puback rdf:type owl:Class ;
-            rdfs:subClassOf MQTT:MQTTControlPacket ;
+            rdfs:subClassOf MQTT:MQTTControlPacket ,
+                            [ rdf:type owl:Restriction ;
+                              owl:onProperty MQTT:hasReasonCode ;
+                              owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                              owl:onClass MQTT:ReasonCode
+                            ] ;
             rdfs:comment "Publish acknowledgment control packet for QoS 1 messages." ;
             rdfs:label "PUBACK packet"@en ;
             dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.4"@en .
@@ -917,7 +967,12 @@ MQTT:Puback rdf:type owl:Class ;
 
 ###  http://www.w3id.org/hsu-aut/MQTT#Pubcomp
 MQTT:Pubcomp rdf:type owl:Class ;
-             rdfs:subClassOf MQTT:MQTTControlPacket ;
+             rdfs:subClassOf MQTT:MQTTControlPacket ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty MQTT:hasReasonCode ;
+                               owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                               owl:onClass MQTT:ReasonCode
+                             ] ;
              rdfs:comment "Publish complete control packet (QoS 2 delivery part 3)." ;
              rdfs:label "PUBCOMP packet"@en ;
              dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.7"@en .
@@ -933,7 +988,12 @@ MQTT:Publish rdf:type owl:Class ;
 
 ###  http://www.w3id.org/hsu-aut/MQTT#Pubrec
 MQTT:Pubrec rdf:type owl:Class ;
-            rdfs:subClassOf MQTT:MQTTControlPacket ;
+            rdfs:subClassOf MQTT:MQTTControlPacket ,
+                            [ rdf:type owl:Restriction ;
+                              owl:onProperty MQTT:hasReasonCode ;
+                              owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                              owl:onClass MQTT:ReasonCode
+                            ] ;
             rdfs:comment "Publish received control packet (QoS 2 delivery part 1)." ;
             rdfs:label "PUBREC packet"@en ;
             dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.5"@en .
@@ -941,7 +1001,12 @@ MQTT:Pubrec rdf:type owl:Class ;
 
 ###  http://www.w3id.org/hsu-aut/MQTT#Pubrel
 MQTT:Pubrel rdf:type owl:Class ;
-            rdfs:subClassOf MQTT:MQTTControlPacket ;
+            rdfs:subClassOf MQTT:MQTTControlPacket ,
+                            [ rdf:type owl:Restriction ;
+                              owl:onProperty MQTT:hasReasonCode ;
+                              owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                              owl:onClass MQTT:ReasonCode
+                            ] ;
             rdfs:comment "Publish release control packet (QoS 2 delivery part 2)." ;
             rdfs:label "PUBREL packet"@en ;
             dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.6"@en .
@@ -1015,6 +1080,98 @@ MQTT:QoS2Publication rdf:type owl:Class ;
                      rdfs:comment "A PUBLISH packet whose Application Message is delivered with QoS 2, exactly once delivery (4.3.3). Defined rather than asserted: the class is the set of PUBLISH packets whose message has the QoS individual QoS2. Membership is therefore derivable in both directions, and the disjointness of the three classes follows from the functionality of hasQoS and hasApplicationMessage together with the distinctness of the three QoS individuals." ;
                      rdfs:label "QoS 2 publication"@en ;
                      dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 4.3.3"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCode
+MQTT:ReasonCode rdf:type owl:Class ;
+                owl:equivalentClass [ rdf:type owl:Class ;
+                                      owl:oneOf (
+                                                      MQTT:ReasonCodeSuccess
+                                                      MQTT:ReasonCodeNormalDisconnection
+                                                      MQTT:ReasonCodeGrantedQoS0
+                                                      MQTT:ReasonCodeGrantedQoS1
+                                                      MQTT:ReasonCodeGrantedQoS2
+                                                      MQTT:ReasonCodeDisconnectWithWillMessage
+                                                      MQTT:ReasonCodeNoMatchingSubscribers
+                                                      MQTT:ReasonCodeNoSubscriptionExisted
+                                                      MQTT:ReasonCodeContinueAuthentication
+                                                      MQTT:ReasonCodeReAuthenticate
+                                                      MQTT:ReasonCodeUnspecifiedError
+                                                      MQTT:ReasonCodeMalformedPacket
+                                                      MQTT:ReasonCodeProtocolError
+                                                      MQTT:ReasonCodeImplementationSpecificError
+                                                      MQTT:ReasonCodeUnsupportedProtocolVersion
+                                                      MQTT:ReasonCodeClientIdentifierNotValid
+                                                      MQTT:ReasonCodeBadUserNameOrPassword
+                                                      MQTT:ReasonCodeNotAuthorized
+                                                      MQTT:ReasonCodeServerUnavailable
+                                                      MQTT:ReasonCodeServerBusy
+                                                      MQTT:ReasonCodeBanned
+                                                      MQTT:ReasonCodeServerShuttingDown
+                                                      MQTT:ReasonCodeBadAuthenticationMethod
+                                                      MQTT:ReasonCodeKeepAliveTimeout
+                                                      MQTT:ReasonCodeSessionTakenOver
+                                                      MQTT:ReasonCodeTopicFilterInvalid
+                                                      MQTT:ReasonCodeTopicNameInvalid
+                                                      MQTT:ReasonCodePacketIdentifierInUse
+                                                      MQTT:ReasonCodePacketIdentifierNotFound
+                                                      MQTT:ReasonCodeReceiveMaximumExceeded
+                                                      MQTT:ReasonCodeTopicAliasInvalid
+                                                      MQTT:ReasonCodePacketTooLarge
+                                                      MQTT:ReasonCodeMessageRateTooHigh
+                                                      MQTT:ReasonCodeQuotaExceeded
+                                                      MQTT:ReasonCodeAdministrativeAction
+                                                      MQTT:ReasonCodePayloadFormatInvalid
+                                                      MQTT:ReasonCodeRetainNotSupported
+                                                      MQTT:ReasonCodeQoSNotSupported
+                                                      MQTT:ReasonCodeUseAnotherServer
+                                                      MQTT:ReasonCodeServerMoved
+                                                      MQTT:ReasonCodeSharedSubscriptionsNotSupported
+                                                      MQTT:ReasonCodeConnectionRateExceeded
+                                                      MQTT:ReasonCodeMaximumConnectTime
+                                                      MQTT:ReasonCodeSubscriptionIdentifiersNotSupported
+                                                      MQTT:ReasonCodeWildcardSubscriptionsNotSupported
+                                                )
+                                    ] ;
+                rdfs:comment "A one byte unsigned value that indicates the result of an operation (2.4). Table 2-6 lists exactly 45 Reason Codes, which is why this class is the enumeration of its individuals. The same value can stand for different Reason Codes in different packets: 0x00 is Success, Normal disconnection and Granted QoS 0." ;
+                rdfs:label "reason code"@en ;
+                dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#SuccessReasonCode
+MQTT:SuccessReasonCode rdf:type owl:Class ;
+                       owl:equivalentClass [ rdf:type owl:Class ;
+                                             owl:intersectionOf ( MQTT:ReasonCode
+                                                                  [ rdf:type owl:Restriction ;
+                                                                    owl:onProperty MQTT:reasonCodeValue ;
+                                                                    owl:someValuesFrom [ rdf:type rdfs:Datatype ;
+                                                                                         owl:onDatatype xsd:unsignedByte ;
+                                                                                         owl:withRestrictions ( [ xsd:maxInclusive "127"^^xsd:unsignedByte ] )
+                                                                                       ]
+                                                                  ]
+                                                                )
+                                           ] ;
+                       rdfs:comment "A Reason Code that indicates successful completion. 2.4: 'Reason Codes less than 0x80 indicate successful completion of an operation.' Defined over the value, so membership is derived rather than asserted." ;
+                       rdfs:label "success reason code"@en ;
+                       dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ErrorReasonCode
+MQTT:ErrorReasonCode rdf:type owl:Class ;
+                     owl:equivalentClass [ rdf:type owl:Class ;
+                                           owl:intersectionOf ( MQTT:ReasonCode
+                                                                [ rdf:type owl:Restriction ;
+                                                                  owl:onProperty MQTT:reasonCodeValue ;
+                                                                  owl:someValuesFrom [ rdf:type rdfs:Datatype ;
+                                                                                       owl:onDatatype xsd:unsignedByte ;
+                                                                                       owl:withRestrictions ( [ xsd:minInclusive "128"^^xsd:unsignedByte ] )
+                                                                                     ]
+                                                                ]
+                                                              )
+                                         ] ;
+                     rdfs:comment "A Reason Code that indicates failure. 2.4: 'Reason Code values of 0x80 or greater indicate failure.' Defined over the value; disjointness from SuccessReasonCode follows from the functionality of reasonCodeValue and needs no separate axiom." ;
+                     rdfs:label "error reason code"@en ;
+                     dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4"@en .
 
 
 ###  http://www.w3id.org/hsu-aut/MQTT#RetainHandling
@@ -1207,6 +1364,510 @@ MQTT:RetainHandling2 rdf:type owl:NamedIndividual ,
                      dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.8.3.1"@en .
 
 
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeSuccess
+MQTT:ReasonCodeSuccess rdf:type owl:NamedIndividual ,
+                                MQTT:ReasonCode ;
+                       MQTT:reasonCodeValue "0"^^xsd:unsignedByte ;
+                       MQTT:appliesToPacket MQTT:Connack ;
+                       MQTT:appliesToPacket MQTT:Puback ;
+                       MQTT:appliesToPacket MQTT:Pubrec ;
+                       MQTT:appliesToPacket MQTT:Pubrel ;
+                       MQTT:appliesToPacket MQTT:Pubcomp ;
+                       MQTT:appliesToPacket MQTT:Unsuback ;
+                       MQTT:appliesToPacket MQTT:Auth ;
+                       rdfs:comment "Reason Code 0x00 (Success), indicates successful completion. Allowed in: CONNACK, PUBACK, PUBREC, PUBREL, PUBCOMP, UNSUBACK, AUTH (2.4, Table 2-6)." ;
+                       rdfs:label "Success"@en ;
+                       dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeNormalDisconnection
+MQTT:ReasonCodeNormalDisconnection rdf:type owl:NamedIndividual ,
+                                            MQTT:ReasonCode ;
+                                   MQTT:reasonCodeValue "0"^^xsd:unsignedByte ;
+                                   MQTT:appliesToPacket MQTT:Disconnect ;
+                                   rdfs:comment "Reason Code 0x00 (Normal disconnection), indicates successful completion. Allowed in: DISCONNECT (2.4, Table 2-6)." ;
+                                   rdfs:label "Normal disconnection"@en ;
+                                   dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeGrantedQoS0
+MQTT:ReasonCodeGrantedQoS0 rdf:type owl:NamedIndividual ,
+                                    MQTT:ReasonCode ;
+                           MQTT:reasonCodeValue "0"^^xsd:unsignedByte ;
+                           MQTT:grantsQoS MQTT:QoS0 ;
+                           MQTT:appliesToPacket MQTT:Suback ;
+                           rdfs:comment "Reason Code 0x00 (Granted QoS 0), indicates successful completion. Allowed in: SUBACK (2.4, Table 2-6)." ;
+                           rdfs:label "Granted QoS 0"@en ;
+                           dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeGrantedQoS1
+MQTT:ReasonCodeGrantedQoS1 rdf:type owl:NamedIndividual ,
+                                    MQTT:ReasonCode ;
+                           MQTT:reasonCodeValue "1"^^xsd:unsignedByte ;
+                           MQTT:grantsQoS MQTT:QoS1 ;
+                           MQTT:appliesToPacket MQTT:Suback ;
+                           rdfs:comment "Reason Code 0x01 (Granted QoS 1), indicates successful completion. Allowed in: SUBACK (2.4, Table 2-6)." ;
+                           rdfs:label "Granted QoS 1"@en ;
+                           dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeGrantedQoS2
+MQTT:ReasonCodeGrantedQoS2 rdf:type owl:NamedIndividual ,
+                                    MQTT:ReasonCode ;
+                           MQTT:reasonCodeValue "2"^^xsd:unsignedByte ;
+                           MQTT:grantsQoS MQTT:QoS2 ;
+                           MQTT:appliesToPacket MQTT:Suback ;
+                           rdfs:comment "Reason Code 0x02 (Granted QoS 2), indicates successful completion. Allowed in: SUBACK (2.4, Table 2-6)." ;
+                           rdfs:label "Granted QoS 2"@en ;
+                           dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeDisconnectWithWillMessage
+MQTT:ReasonCodeDisconnectWithWillMessage rdf:type owl:NamedIndividual ,
+                                                  MQTT:ReasonCode ;
+                                         MQTT:reasonCodeValue "4"^^xsd:unsignedByte ;
+                                         MQTT:appliesToPacket MQTT:Disconnect ;
+                                         rdfs:comment "Reason Code 0x04 (Disconnect with Will Message), indicates successful completion. Allowed in: DISCONNECT (2.4, Table 2-6)." ;
+                                         rdfs:label "Disconnect with Will Message"@en ;
+                                         dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeNoMatchingSubscribers
+MQTT:ReasonCodeNoMatchingSubscribers rdf:type owl:NamedIndividual ,
+                                              MQTT:ReasonCode ;
+                                     MQTT:reasonCodeValue "16"^^xsd:unsignedByte ;
+                                     MQTT:appliesToPacket MQTT:Puback ;
+                                     MQTT:appliesToPacket MQTT:Pubrec ;
+                                     rdfs:comment "Reason Code 0x10 (No matching subscribers), indicates successful completion. Allowed in: PUBACK, PUBREC (2.4, Table 2-6)." ;
+                                     rdfs:label "No matching subscribers"@en ;
+                                     dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeNoSubscriptionExisted
+MQTT:ReasonCodeNoSubscriptionExisted rdf:type owl:NamedIndividual ,
+                                              MQTT:ReasonCode ;
+                                     MQTT:reasonCodeValue "17"^^xsd:unsignedByte ;
+                                     MQTT:appliesToPacket MQTT:Unsuback ;
+                                     rdfs:comment "Reason Code 0x11 (No subscription existed), indicates successful completion. Allowed in: UNSUBACK (2.4, Table 2-6)." ;
+                                     rdfs:label "No subscription existed"@en ;
+                                     dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeContinueAuthentication
+MQTT:ReasonCodeContinueAuthentication rdf:type owl:NamedIndividual ,
+                                               MQTT:ReasonCode ;
+                                      MQTT:reasonCodeValue "24"^^xsd:unsignedByte ;
+                                      MQTT:appliesToPacket MQTT:Auth ;
+                                      rdfs:comment "Reason Code 0x18 (Continue authentication), indicates successful completion. Allowed in: AUTH (2.4, Table 2-6)." ;
+                                      rdfs:label "Continue authentication"@en ;
+                                      dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeReAuthenticate
+MQTT:ReasonCodeReAuthenticate rdf:type owl:NamedIndividual ,
+                                       MQTT:ReasonCode ;
+                              MQTT:reasonCodeValue "25"^^xsd:unsignedByte ;
+                              MQTT:appliesToPacket MQTT:Auth ;
+                              rdfs:comment "Reason Code 0x19 (Re-authenticate), indicates successful completion. Allowed in: AUTH (2.4, Table 2-6)." ;
+                              rdfs:label "Re-authenticate"@en ;
+                              dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeUnspecifiedError
+MQTT:ReasonCodeUnspecifiedError rdf:type owl:NamedIndividual ,
+                                         MQTT:ReasonCode ;
+                                MQTT:reasonCodeValue "128"^^xsd:unsignedByte ;
+                                MQTT:appliesToPacket MQTT:Connack ;
+                                MQTT:appliesToPacket MQTT:Puback ;
+                                MQTT:appliesToPacket MQTT:Pubrec ;
+                                MQTT:appliesToPacket MQTT:Suback ;
+                                MQTT:appliesToPacket MQTT:Unsuback ;
+                                MQTT:appliesToPacket MQTT:Disconnect ;
+                                rdfs:comment "Reason Code 0x80 (Unspecified error), indicates failure. Allowed in: CONNACK, PUBACK, PUBREC, SUBACK, UNSUBACK, DISCONNECT (2.4, Table 2-6)." ;
+                                rdfs:label "Unspecified error"@en ;
+                                dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeMalformedPacket
+MQTT:ReasonCodeMalformedPacket rdf:type owl:NamedIndividual ,
+                                        MQTT:ReasonCode ;
+                               MQTT:reasonCodeValue "129"^^xsd:unsignedByte ;
+                               MQTT:appliesToPacket MQTT:Connack ;
+                               MQTT:appliesToPacket MQTT:Disconnect ;
+                               rdfs:comment "Reason Code 0x81 (Malformed Packet), indicates failure. Allowed in: CONNACK, DISCONNECT (2.4, Table 2-6)." ;
+                               rdfs:label "Malformed Packet"@en ;
+                               dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeProtocolError
+MQTT:ReasonCodeProtocolError rdf:type owl:NamedIndividual ,
+                                      MQTT:ReasonCode ;
+                             MQTT:reasonCodeValue "130"^^xsd:unsignedByte ;
+                             MQTT:appliesToPacket MQTT:Connack ;
+                             MQTT:appliesToPacket MQTT:Disconnect ;
+                             rdfs:comment "Reason Code 0x82 (Protocol Error), indicates failure. Allowed in: CONNACK, DISCONNECT (2.4, Table 2-6)." ;
+                             rdfs:label "Protocol Error"@en ;
+                             dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeImplementationSpecificError
+MQTT:ReasonCodeImplementationSpecificError rdf:type owl:NamedIndividual ,
+                                                    MQTT:ReasonCode ;
+                                           MQTT:reasonCodeValue "131"^^xsd:unsignedByte ;
+                                           MQTT:appliesToPacket MQTT:Connack ;
+                                           MQTT:appliesToPacket MQTT:Puback ;
+                                           MQTT:appliesToPacket MQTT:Pubrec ;
+                                           MQTT:appliesToPacket MQTT:Suback ;
+                                           MQTT:appliesToPacket MQTT:Unsuback ;
+                                           MQTT:appliesToPacket MQTT:Disconnect ;
+                                           rdfs:comment "Reason Code 0x83 (Implementation specific error), indicates failure. Allowed in: CONNACK, PUBACK, PUBREC, SUBACK, UNSUBACK, DISCONNECT (2.4, Table 2-6)." ;
+                                           rdfs:label "Implementation specific error"@en ;
+                                           dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeUnsupportedProtocolVersion
+MQTT:ReasonCodeUnsupportedProtocolVersion rdf:type owl:NamedIndividual ,
+                                                   MQTT:ReasonCode ;
+                                          MQTT:reasonCodeValue "132"^^xsd:unsignedByte ;
+                                          MQTT:appliesToPacket MQTT:Connack ;
+                                          rdfs:comment "Reason Code 0x84 (Unsupported Protocol Version), indicates failure. Allowed in: CONNACK (2.4, Table 2-6)." ;
+                                          rdfs:label "Unsupported Protocol Version"@en ;
+                                          dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeClientIdentifierNotValid
+MQTT:ReasonCodeClientIdentifierNotValid rdf:type owl:NamedIndividual ,
+                                                 MQTT:ReasonCode ;
+                                        MQTT:reasonCodeValue "133"^^xsd:unsignedByte ;
+                                        MQTT:appliesToPacket MQTT:Connack ;
+                                        rdfs:comment "Reason Code 0x85 (Client Identifier not valid), indicates failure. Allowed in: CONNACK (2.4, Table 2-6)." ;
+                                        rdfs:label "Client Identifier not valid"@en ;
+                                        dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeBadUserNameOrPassword
+MQTT:ReasonCodeBadUserNameOrPassword rdf:type owl:NamedIndividual ,
+                                              MQTT:ReasonCode ;
+                                     MQTT:reasonCodeValue "134"^^xsd:unsignedByte ;
+                                     MQTT:appliesToPacket MQTT:Connack ;
+                                     rdfs:comment "Reason Code 0x86 (Bad User Name or Password), indicates failure. Allowed in: CONNACK (2.4, Table 2-6)." ;
+                                     rdfs:label "Bad User Name or Password"@en ;
+                                     dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeNotAuthorized
+MQTT:ReasonCodeNotAuthorized rdf:type owl:NamedIndividual ,
+                                      MQTT:ReasonCode ;
+                             MQTT:reasonCodeValue "135"^^xsd:unsignedByte ;
+                             MQTT:appliesToPacket MQTT:Connack ;
+                             MQTT:appliesToPacket MQTT:Puback ;
+                             MQTT:appliesToPacket MQTT:Pubrec ;
+                             MQTT:appliesToPacket MQTT:Suback ;
+                             MQTT:appliesToPacket MQTT:Unsuback ;
+                             MQTT:appliesToPacket MQTT:Disconnect ;
+                             rdfs:comment "Reason Code 0x87 (Not authorized), indicates failure. Allowed in: CONNACK, PUBACK, PUBREC, SUBACK, UNSUBACK, DISCONNECT (2.4, Table 2-6)." ;
+                             rdfs:label "Not authorized"@en ;
+                             dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeServerUnavailable
+MQTT:ReasonCodeServerUnavailable rdf:type owl:NamedIndividual ,
+                                          MQTT:ReasonCode ;
+                                 MQTT:reasonCodeValue "136"^^xsd:unsignedByte ;
+                                 MQTT:appliesToPacket MQTT:Connack ;
+                                 rdfs:comment "Reason Code 0x88 (Server unavailable), indicates failure. Allowed in: CONNACK (2.4, Table 2-6)." ;
+                                 rdfs:label "Server unavailable"@en ;
+                                 dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeServerBusy
+MQTT:ReasonCodeServerBusy rdf:type owl:NamedIndividual ,
+                                   MQTT:ReasonCode ;
+                          MQTT:reasonCodeValue "137"^^xsd:unsignedByte ;
+                          MQTT:appliesToPacket MQTT:Connack ;
+                          MQTT:appliesToPacket MQTT:Disconnect ;
+                          rdfs:comment "Reason Code 0x89 (Server busy), indicates failure. Allowed in: CONNACK, DISCONNECT (2.4, Table 2-6)." ;
+                          rdfs:label "Server busy"@en ;
+                          dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeBanned
+MQTT:ReasonCodeBanned rdf:type owl:NamedIndividual ,
+                               MQTT:ReasonCode ;
+                      MQTT:reasonCodeValue "138"^^xsd:unsignedByte ;
+                      MQTT:appliesToPacket MQTT:Connack ;
+                      rdfs:comment "Reason Code 0x8A (Banned), indicates failure. Allowed in: CONNACK (2.4, Table 2-6)." ;
+                      rdfs:label "Banned"@en ;
+                      dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeServerShuttingDown
+MQTT:ReasonCodeServerShuttingDown rdf:type owl:NamedIndividual ,
+                                           MQTT:ReasonCode ;
+                                  MQTT:reasonCodeValue "139"^^xsd:unsignedByte ;
+                                  MQTT:appliesToPacket MQTT:Disconnect ;
+                                  rdfs:comment "Reason Code 0x8B (Server shutting down), indicates failure. Allowed in: DISCONNECT (2.4, Table 2-6)." ;
+                                  rdfs:label "Server shutting down"@en ;
+                                  dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeBadAuthenticationMethod
+MQTT:ReasonCodeBadAuthenticationMethod rdf:type owl:NamedIndividual ,
+                                                MQTT:ReasonCode ;
+                                       MQTT:reasonCodeValue "140"^^xsd:unsignedByte ;
+                                       MQTT:appliesToPacket MQTT:Connack ;
+                                       MQTT:appliesToPacket MQTT:Disconnect ;
+                                       rdfs:comment "Reason Code 0x8C (Bad authentication method), indicates failure. Allowed in: CONNACK, DISCONNECT (2.4, Table 2-6)." ;
+                                       rdfs:label "Bad authentication method"@en ;
+                                       dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeKeepAliveTimeout
+MQTT:ReasonCodeKeepAliveTimeout rdf:type owl:NamedIndividual ,
+                                         MQTT:ReasonCode ;
+                                MQTT:reasonCodeValue "141"^^xsd:unsignedByte ;
+                                MQTT:appliesToPacket MQTT:Disconnect ;
+                                rdfs:comment "Reason Code 0x8D (Keep Alive timeout), indicates failure. Allowed in: DISCONNECT (2.4, Table 2-6)." ;
+                                rdfs:label "Keep Alive timeout"@en ;
+                                dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeSessionTakenOver
+MQTT:ReasonCodeSessionTakenOver rdf:type owl:NamedIndividual ,
+                                         MQTT:ReasonCode ;
+                                MQTT:reasonCodeValue "142"^^xsd:unsignedByte ;
+                                MQTT:appliesToPacket MQTT:Disconnect ;
+                                rdfs:comment "Reason Code 0x8E (Session taken over), indicates failure. Allowed in: DISCONNECT (2.4, Table 2-6)." ;
+                                rdfs:label "Session taken over"@en ;
+                                dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeTopicFilterInvalid
+MQTT:ReasonCodeTopicFilterInvalid rdf:type owl:NamedIndividual ,
+                                           MQTT:ReasonCode ;
+                                  MQTT:reasonCodeValue "143"^^xsd:unsignedByte ;
+                                  MQTT:appliesToPacket MQTT:Suback ;
+                                  MQTT:appliesToPacket MQTT:Unsuback ;
+                                  MQTT:appliesToPacket MQTT:Disconnect ;
+                                  rdfs:comment "Reason Code 0x8F (Topic Filter invalid), indicates failure. Allowed in: SUBACK, UNSUBACK, DISCONNECT (2.4, Table 2-6)." ;
+                                  rdfs:label "Topic Filter invalid"@en ;
+                                  dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeTopicNameInvalid
+MQTT:ReasonCodeTopicNameInvalid rdf:type owl:NamedIndividual ,
+                                         MQTT:ReasonCode ;
+                                MQTT:reasonCodeValue "144"^^xsd:unsignedByte ;
+                                MQTT:appliesToPacket MQTT:Connack ;
+                                MQTT:appliesToPacket MQTT:Puback ;
+                                MQTT:appliesToPacket MQTT:Pubrec ;
+                                MQTT:appliesToPacket MQTT:Disconnect ;
+                                rdfs:comment "Reason Code 0x90 (Topic Name invalid), indicates failure. Allowed in: CONNACK, PUBACK, PUBREC, DISCONNECT (2.4, Table 2-6)." ;
+                                rdfs:label "Topic Name invalid"@en ;
+                                dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodePacketIdentifierInUse
+MQTT:ReasonCodePacketIdentifierInUse rdf:type owl:NamedIndividual ,
+                                              MQTT:ReasonCode ;
+                                     MQTT:reasonCodeValue "145"^^xsd:unsignedByte ;
+                                     MQTT:appliesToPacket MQTT:Puback ;
+                                     MQTT:appliesToPacket MQTT:Pubrec ;
+                                     MQTT:appliesToPacket MQTT:Suback ;
+                                     MQTT:appliesToPacket MQTT:Unsuback ;
+                                     rdfs:comment "Reason Code 0x91 (Packet Identifier in use), indicates failure. Allowed in: PUBACK, PUBREC, SUBACK, UNSUBACK (2.4, Table 2-6)." ;
+                                     rdfs:label "Packet Identifier in use"@en ;
+                                     dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodePacketIdentifierNotFound
+MQTT:ReasonCodePacketIdentifierNotFound rdf:type owl:NamedIndividual ,
+                                                 MQTT:ReasonCode ;
+                                        MQTT:reasonCodeValue "146"^^xsd:unsignedByte ;
+                                        MQTT:appliesToPacket MQTT:Pubrel ;
+                                        MQTT:appliesToPacket MQTT:Pubcomp ;
+                                        rdfs:comment "Reason Code 0x92 (Packet Identifier not found), indicates failure. Allowed in: PUBREL, PUBCOMP (2.4, Table 2-6)." ;
+                                        rdfs:label "Packet Identifier not found"@en ;
+                                        dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeReceiveMaximumExceeded
+MQTT:ReasonCodeReceiveMaximumExceeded rdf:type owl:NamedIndividual ,
+                                               MQTT:ReasonCode ;
+                                      MQTT:reasonCodeValue "147"^^xsd:unsignedByte ;
+                                      MQTT:appliesToPacket MQTT:Disconnect ;
+                                      rdfs:comment "Reason Code 0x93 (Receive Maximum exceeded), indicates failure. Allowed in: DISCONNECT (2.4, Table 2-6)." ;
+                                      rdfs:label "Receive Maximum exceeded"@en ;
+                                      dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeTopicAliasInvalid
+MQTT:ReasonCodeTopicAliasInvalid rdf:type owl:NamedIndividual ,
+                                          MQTT:ReasonCode ;
+                                 MQTT:reasonCodeValue "148"^^xsd:unsignedByte ;
+                                 MQTT:appliesToPacket MQTT:Disconnect ;
+                                 rdfs:comment "Reason Code 0x94 (Topic Alias invalid), indicates failure. Allowed in: DISCONNECT (2.4, Table 2-6)." ;
+                                 rdfs:label "Topic Alias invalid"@en ;
+                                 dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodePacketTooLarge
+MQTT:ReasonCodePacketTooLarge rdf:type owl:NamedIndividual ,
+                                       MQTT:ReasonCode ;
+                              MQTT:reasonCodeValue "149"^^xsd:unsignedByte ;
+                              MQTT:appliesToPacket MQTT:Connack ;
+                              MQTT:appliesToPacket MQTT:Disconnect ;
+                              rdfs:comment "Reason Code 0x95 (Packet too large), indicates failure. Allowed in: CONNACK, DISCONNECT (2.4, Table 2-6)." ;
+                              rdfs:label "Packet too large"@en ;
+                              dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeMessageRateTooHigh
+MQTT:ReasonCodeMessageRateTooHigh rdf:type owl:NamedIndividual ,
+                                           MQTT:ReasonCode ;
+                                  MQTT:reasonCodeValue "150"^^xsd:unsignedByte ;
+                                  MQTT:appliesToPacket MQTT:Disconnect ;
+                                  rdfs:comment "Reason Code 0x96 (Message rate too high), indicates failure. Allowed in: DISCONNECT (2.4, Table 2-6)." ;
+                                  rdfs:label "Message rate too high"@en ;
+                                  dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeQuotaExceeded
+MQTT:ReasonCodeQuotaExceeded rdf:type owl:NamedIndividual ,
+                                      MQTT:ReasonCode ;
+                             MQTT:reasonCodeValue "151"^^xsd:unsignedByte ;
+                             MQTT:appliesToPacket MQTT:Connack ;
+                             MQTT:appliesToPacket MQTT:Puback ;
+                             MQTT:appliesToPacket MQTT:Pubrec ;
+                             MQTT:appliesToPacket MQTT:Suback ;
+                             MQTT:appliesToPacket MQTT:Disconnect ;
+                             rdfs:comment "Reason Code 0x97 (Quota exceeded), indicates failure. Allowed in: CONNACK, PUBACK, PUBREC, SUBACK, DISCONNECT (2.4, Table 2-6)." ;
+                             rdfs:label "Quota exceeded"@en ;
+                             dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeAdministrativeAction
+MQTT:ReasonCodeAdministrativeAction rdf:type owl:NamedIndividual ,
+                                             MQTT:ReasonCode ;
+                                    MQTT:reasonCodeValue "152"^^xsd:unsignedByte ;
+                                    MQTT:appliesToPacket MQTT:Disconnect ;
+                                    rdfs:comment "Reason Code 0x98 (Administrative action), indicates failure. Allowed in: DISCONNECT (2.4, Table 2-6)." ;
+                                    rdfs:label "Administrative action"@en ;
+                                    dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodePayloadFormatInvalid
+MQTT:ReasonCodePayloadFormatInvalid rdf:type owl:NamedIndividual ,
+                                             MQTT:ReasonCode ;
+                                    MQTT:reasonCodeValue "153"^^xsd:unsignedByte ;
+                                    MQTT:appliesToPacket MQTT:Connack ;
+                                    MQTT:appliesToPacket MQTT:Puback ;
+                                    MQTT:appliesToPacket MQTT:Pubrec ;
+                                    MQTT:appliesToPacket MQTT:Disconnect ;
+                                    rdfs:comment "Reason Code 0x99 (Payload format invalid), indicates failure. Allowed in: CONNACK, PUBACK, PUBREC, DISCONNECT (2.4, Table 2-6)." ;
+                                    rdfs:label "Payload format invalid"@en ;
+                                    dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeRetainNotSupported
+MQTT:ReasonCodeRetainNotSupported rdf:type owl:NamedIndividual ,
+                                           MQTT:ReasonCode ;
+                                  MQTT:reasonCodeValue "154"^^xsd:unsignedByte ;
+                                  MQTT:appliesToPacket MQTT:Connack ;
+                                  MQTT:appliesToPacket MQTT:Disconnect ;
+                                  rdfs:comment "Reason Code 0x9A (Retain not supported), indicates failure. Allowed in: CONNACK, DISCONNECT (2.4, Table 2-6)." ;
+                                  rdfs:label "Retain not supported"@en ;
+                                  dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeQoSNotSupported
+MQTT:ReasonCodeQoSNotSupported rdf:type owl:NamedIndividual ,
+                                        MQTT:ReasonCode ;
+                               MQTT:reasonCodeValue "155"^^xsd:unsignedByte ;
+                               MQTT:appliesToPacket MQTT:Connack ;
+                               MQTT:appliesToPacket MQTT:Disconnect ;
+                               rdfs:comment "Reason Code 0x9B (QoS not supported), indicates failure. Allowed in: CONNACK, DISCONNECT (2.4, Table 2-6)." ;
+                               rdfs:label "QoS not supported"@en ;
+                               dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeUseAnotherServer
+MQTT:ReasonCodeUseAnotherServer rdf:type owl:NamedIndividual ,
+                                         MQTT:ReasonCode ;
+                                MQTT:reasonCodeValue "156"^^xsd:unsignedByte ;
+                                MQTT:appliesToPacket MQTT:Connack ;
+                                MQTT:appliesToPacket MQTT:Disconnect ;
+                                rdfs:comment "Reason Code 0x9C (Use another server), indicates failure. Allowed in: CONNACK, DISCONNECT (2.4, Table 2-6)." ;
+                                rdfs:label "Use another server"@en ;
+                                dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeServerMoved
+MQTT:ReasonCodeServerMoved rdf:type owl:NamedIndividual ,
+                                    MQTT:ReasonCode ;
+                           MQTT:reasonCodeValue "157"^^xsd:unsignedByte ;
+                           MQTT:appliesToPacket MQTT:Connack ;
+                           MQTT:appliesToPacket MQTT:Disconnect ;
+                           rdfs:comment "Reason Code 0x9D (Server moved), indicates failure. Allowed in: CONNACK, DISCONNECT (2.4, Table 2-6)." ;
+                           rdfs:label "Server moved"@en ;
+                           dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeSharedSubscriptionsNotSupported
+MQTT:ReasonCodeSharedSubscriptionsNotSupported rdf:type owl:NamedIndividual ,
+                                                        MQTT:ReasonCode ;
+                                               MQTT:reasonCodeValue "158"^^xsd:unsignedByte ;
+                                               MQTT:appliesToPacket MQTT:Suback ;
+                                               MQTT:appliesToPacket MQTT:Disconnect ;
+                                               rdfs:comment "Reason Code 0x9E (Shared Subscriptions not supported), indicates failure. Allowed in: SUBACK, DISCONNECT (2.4, Table 2-6)." ;
+                                               rdfs:label "Shared Subscriptions not supported"@en ;
+                                               dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeConnectionRateExceeded
+MQTT:ReasonCodeConnectionRateExceeded rdf:type owl:NamedIndividual ,
+                                               MQTT:ReasonCode ;
+                                      MQTT:reasonCodeValue "159"^^xsd:unsignedByte ;
+                                      MQTT:appliesToPacket MQTT:Connack ;
+                                      MQTT:appliesToPacket MQTT:Disconnect ;
+                                      rdfs:comment "Reason Code 0x9F (Connection rate exceeded), indicates failure. Allowed in: CONNACK, DISCONNECT (2.4, Table 2-6)." ;
+                                      rdfs:label "Connection rate exceeded"@en ;
+                                      dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeMaximumConnectTime
+MQTT:ReasonCodeMaximumConnectTime rdf:type owl:NamedIndividual ,
+                                           MQTT:ReasonCode ;
+                                  MQTT:reasonCodeValue "160"^^xsd:unsignedByte ;
+                                  MQTT:appliesToPacket MQTT:Disconnect ;
+                                  rdfs:comment "Reason Code 0xA0 (Maximum connect time), indicates failure. Allowed in: DISCONNECT (2.4, Table 2-6)." ;
+                                  rdfs:label "Maximum connect time"@en ;
+                                  dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeSubscriptionIdentifiersNotSupported
+MQTT:ReasonCodeSubscriptionIdentifiersNotSupported rdf:type owl:NamedIndividual ,
+                                                            MQTT:ReasonCode ;
+                                                   MQTT:reasonCodeValue "161"^^xsd:unsignedByte ;
+                                                   MQTT:appliesToPacket MQTT:Suback ;
+                                                   MQTT:appliesToPacket MQTT:Disconnect ;
+                                                   rdfs:comment "Reason Code 0xA1 (Subscription Identifiers not supported), indicates failure. Allowed in: SUBACK, DISCONNECT (2.4, Table 2-6)." ;
+                                                   rdfs:label "Subscription Identifiers not supported"@en ;
+                                                   dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
+###  http://www.w3id.org/hsu-aut/MQTT#ReasonCodeWildcardSubscriptionsNotSupported
+MQTT:ReasonCodeWildcardSubscriptionsNotSupported rdf:type owl:NamedIndividual ,
+                                                          MQTT:ReasonCode ;
+                                                 MQTT:reasonCodeValue "162"^^xsd:unsignedByte ;
+                                                 MQTT:appliesToPacket MQTT:Suback ;
+                                                 MQTT:appliesToPacket MQTT:Disconnect ;
+                                                 rdfs:comment "Reason Code 0xA2 (Wildcard Subscriptions not supported), indicates failure. Allowed in: SUBACK, DISCONNECT (2.4, Table 2-6)." ;
+                                                 rdfs:label "Wildcard Subscriptions not supported"@en ;
+                                                 dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
+
+
 #################################################################
 #    General axioms
 #################################################################
@@ -1274,5 +1935,59 @@ MQTT:RetainHandling2 rdf:type owl:NamedIndividual ,
   owl:members ( MQTT:RetainHandling0
                 MQTT:RetainHandling1
                 MQTT:RetainHandling2
+              )
+] .
+
+
+# Die 45 Reason Codes der Tabelle 2-6 sind paarweise verschieden. Notwendig,
+# weil drei von ihnen denselben Wert 0x00 tragen und ein Reasoner sie sonst
+# zusammenfallen lassen koennte.
+[ rdf:type owl:AllDifferent ;
+  owl:members (
+                MQTT:ReasonCodeSuccess
+                MQTT:ReasonCodeNormalDisconnection
+                MQTT:ReasonCodeGrantedQoS0
+                MQTT:ReasonCodeGrantedQoS1
+                MQTT:ReasonCodeGrantedQoS2
+                MQTT:ReasonCodeDisconnectWithWillMessage
+                MQTT:ReasonCodeNoMatchingSubscribers
+                MQTT:ReasonCodeNoSubscriptionExisted
+                MQTT:ReasonCodeContinueAuthentication
+                MQTT:ReasonCodeReAuthenticate
+                MQTT:ReasonCodeUnspecifiedError
+                MQTT:ReasonCodeMalformedPacket
+                MQTT:ReasonCodeProtocolError
+                MQTT:ReasonCodeImplementationSpecificError
+                MQTT:ReasonCodeUnsupportedProtocolVersion
+                MQTT:ReasonCodeClientIdentifierNotValid
+                MQTT:ReasonCodeBadUserNameOrPassword
+                MQTT:ReasonCodeNotAuthorized
+                MQTT:ReasonCodeServerUnavailable
+                MQTT:ReasonCodeServerBusy
+                MQTT:ReasonCodeBanned
+                MQTT:ReasonCodeServerShuttingDown
+                MQTT:ReasonCodeBadAuthenticationMethod
+                MQTT:ReasonCodeKeepAliveTimeout
+                MQTT:ReasonCodeSessionTakenOver
+                MQTT:ReasonCodeTopicFilterInvalid
+                MQTT:ReasonCodeTopicNameInvalid
+                MQTT:ReasonCodePacketIdentifierInUse
+                MQTT:ReasonCodePacketIdentifierNotFound
+                MQTT:ReasonCodeReceiveMaximumExceeded
+                MQTT:ReasonCodeTopicAliasInvalid
+                MQTT:ReasonCodePacketTooLarge
+                MQTT:ReasonCodeMessageRateTooHigh
+                MQTT:ReasonCodeQuotaExceeded
+                MQTT:ReasonCodeAdministrativeAction
+                MQTT:ReasonCodePayloadFormatInvalid
+                MQTT:ReasonCodeRetainNotSupported
+                MQTT:ReasonCodeQoSNotSupported
+                MQTT:ReasonCodeUseAnotherServer
+                MQTT:ReasonCodeServerMoved
+                MQTT:ReasonCodeSharedSubscriptionsNotSupported
+                MQTT:ReasonCodeConnectionRateExceeded
+                MQTT:ReasonCodeMaximumConnectTime
+                MQTT:ReasonCodeSubscriptionIdentifiersNotSupported
+                MQTT:ReasonCodeWildcardSubscriptionsNotSupported
               )
 ] .
