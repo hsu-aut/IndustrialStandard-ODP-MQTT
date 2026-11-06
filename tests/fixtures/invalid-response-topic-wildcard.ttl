@@ -1,8 +1,6 @@
 # Control case for mqttshape:TopicNameNoWildcards, reached through the response
 # topic. [MQTT-3.3.2-14]: "The Response Topic MUST NOT contain wildcard
-# characters." Since version 6.0.0 the response topic is a MQTT:Topic, so the
-# one topic name shape covers this case too -- before, it needed a shape of its
-# own that repeated the same rule for a literal.
+# characters."
 
 @prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix MQTT: <http://www.w3id.org/hsu-aut/MQTT#> .

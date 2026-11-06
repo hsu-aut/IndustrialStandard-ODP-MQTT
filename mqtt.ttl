@@ -11,7 +11,7 @@
 
 <http://www.w3id.org/hsu-aut/MQTT> rdf:type owl:Ontology ;
                                     owl:versionIRI <http://www.w3id.org/hsu-aut/MQTT/6.0.0> ;
-                                    rdfs:comment "MQTT (Message Queuing Telemetry Transport) Ontology representing the MQTT v5.0 protocol standard as defined by OASIS. This ontology captures the core concepts of MQTT including clients, servers, connections, control packets, topics, subscriptions, and message exchange patterns. Every entity carries a dcterms:source annotation naming the clause of the standard it reflects; the one entity for the server address carries an explicit note that it goes beyond the standard instead." ;
+                                    rdfs:comment "MQTT (Message Queuing Telemetry Transport) Ontology representing the MQTT v5.0 protocol standard as defined by OASIS. This ontology captures the core concepts of MQTT including clients, servers, connections, control packets, topics, subscriptions, and message exchange patterns. Every entity carries a dcterms:source annotation naming the clause of the standard it reflects." ;
                                     owl:versionInfo "6.0.0" ;
                                     rdfs:label "MQTT"@en ;
                                     dcterms:title "MQTT - An Ontology Design Pattern for the MQTT Version 5.0 Protocol"@en ;
@@ -30,8 +30,7 @@
 #################################################################
 #    Annotation properties used in the metadata
 #################################################################
-# Declared so that the ontology stays within OWL 2 DL: an undeclared
-# annotation property puts it out of profile.
+# Declared explicitly so that the ontology stays within OWL 2 DL.
 
 dcterms:title rdf:type owl:AnnotationProperty .
 dcterms:description rdf:type owl:AnnotationProperty .
@@ -46,12 +45,7 @@ vann:preferredNamespacePrefix rdf:type owl:AnnotationProperty .
 vann:preferredNamespaceUri rdf:type owl:AnnotationProperty .
 
 ###  http://www.w3id.org/hsu-aut/MQTT#packetTypeValue
-# The numeric value of a packet type (2.1.2, Tab. 2-1). An annotation on the
-# class, not a property of the instances: the type of a packet is its class,
-# and the value belongs to that class. Until version 5.0.0 this was a datatype
-# property on the Fixed Header, which said the same thing a second time with no
-# link to the fifteen classes -- the same double path that the Reason Codes had
-# before 3.0.0.
+# The numeric value of a packet type (2.1.2, Tab. 2-1), annotated on the class.
 MQTT:packetTypeValue rdf:type owl:AnnotationProperty ;
                      rdfs:label "packet type value"@en ;
                      rdfs:comment "The four-bit value that identifies a control packet type on the wire (2.1.2, Tab. 2-1)." ;
@@ -59,10 +53,8 @@ MQTT:packetTypeValue rdf:type owl:AnnotationProperty ;
 
 
 ###  http://www.w3id.org/hsu-aut/MQTT#appliesToPacket
-# Records which control packet types a Reason Code is allowed in (2.4, Table
-# 2-6). An annotation property on purpose: the table states 45 Reason Codes
-# against 9 packet types, and expressing that in OWL would need one axiom per
-# pair without any reasoning benefit. A SHACL shape can check it.
+# Records which control packet types a Reason Code is allowed in
+# (2.4, Table 2-6).
 MQTT:appliesToPacket rdf:type owl:AnnotationProperty ;
                      rdfs:label "applies to packet"@en ;
                      rdfs:comment "The control packet types in which a Reason Code may appear (2.4, Table 2-6)." ;
@@ -83,7 +75,7 @@ MQTT:connectsTo rdf:type owl:ObjectProperty ;
                                        ) ;
                 rdfs:domain MQTT:MQTTClient ;
                 rdfs:range MQTT:MQTTServer ;
-                rdfs:comment "Relates an MQTT Client to an MQTT Server it talks to. Since version 6.0.0 derived over two chains, because a model may state either side: through the Session, which 1.2 calls 'a stateful interaction between a Client and a Server', or through the Network Connection the Client uses. Both lead to the same Server, and a Session outlives the connection (4.1), so neither chain alone would cover both modelling styles." ;
+                rdfs:comment "Relates an MQTT Client to an MQTT Server it talks to, through the Session between them (1.2) or through the Network Connection it uses." ;
                 rdfs:label "connects to"@en ;
                 dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2"@en .
 
@@ -93,7 +85,7 @@ MQTT:hasApplicationMessage rdf:type owl:ObjectProperty ,
                                     owl:FunctionalProperty ;
                            rdfs:domain MQTT:Publish ;
                            rdfs:range MQTT:ApplicationMessage ;
-                           rdfs:comment "Associates a PUBLISH packet with its application message payload. Functional, because 3.3.3 describes the payload of a PUBLISH packet in the singular: 'The Payload contains the Application Message that is being published.'" ;
+                           rdfs:comment "Associates a PUBLISH packet with its Application Message. 3.3.3: 'The Payload contains the Application Message that is being published.'" ;
                            rdfs:label "has application message"@en ;
                            dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.3.3"@en .
 
@@ -121,7 +113,7 @@ MQTT:hasMaximumQoS rdf:type owl:ObjectProperty ,
                             owl:FunctionalProperty ;
                    rdfs:domain MQTT:Subscription ;
                    rdfs:range MQTT:QoS ;
-                   rdfs:comment "Associates a Subscription with its maximum Quality of Service. 1.2: 'A Subscription comprises a Topic Filter and a maximum QoS.' 3.8.3.1: the Maximum QoS field 'gives the maximum QoS level at which the Server can send Application Messages to the Client', and the value 3 is a Protocol Error. Functional, because a Subscription has exactly one maximum QoS." ;
+                   rdfs:comment "Associates a Subscription with its maximum Quality of Service, 'the maximum QoS level at which the Server can send Application Messages to the Client' (1.2, 3.8.3.1)." ;
                    rdfs:label "has maximum QoS"@en ;
                    dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2, 3.8.3.1"@en .
 
@@ -131,7 +123,7 @@ MQTT:hasPayload rdf:type owl:ObjectProperty ,
                          owl:FunctionalProperty ;
                 rdfs:domain MQTT:MQTTControlPacket ;
                 rdfs:range MQTT:Payload ;
-                rdfs:comment "Associates an MQTT Control Packet with its Payload. Functional, because 2.1 gives a packet at most one: 'An MQTT Control Packet consists of up to three parts, always in the following order: Fixed Header, present in all MQTT Control Packets; Variable Header, present in some MQTT Control Packets; Payload, present in some MQTT Control Packets.' Which packet types have one, may have one, or must not have one is stated per packet type at the end of this file, from 2.3 Table 2-5. What is *in* the Payload is not said here but on the packet: the Application Message of a PUBLISH (3.3.3), the Topic Filters of SUBSCRIBE and UNSUBSCRIBE (3.8.3, 3.10.3), the Reason Codes of SUBACK and UNSUBACK (3.9.3, 3.11.3), the credentials of a CONNECT (3.1.3) -- six different contents under one name, which is why this class carries none of them." ;
+                rdfs:comment "Associates an MQTT Control Packet with its Payload, the last of the up to three parts of a packet (2.1). Which packet types carry one is stated per packet type at the end of this file, from 2.3 Table 2-5." ;
                 rdfs:label "has payload"@en ;
                 dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.3"@en .
 
@@ -140,7 +132,7 @@ MQTT:hasPayload rdf:type owl:ObjectProperty ,
 MQTT:hasProperty rdf:type owl:ObjectProperty ;
                  rdfs:domain MQTT:MQTTControlPacket ;
                  rdfs:range MQTT:MQTTProperty ;
-                 rdfs:comment "Associates an MQTT Control Packet with a set of Properties. Deliberately not functional: 2.2.2 gives the CONNECT packet two sets, the one at the end of its Variable Header and 'an optional set of Properties in the Will Properties field with the Payload'." ;
+                 rdfs:comment "Associates an MQTT Control Packet with a set of Properties (2.2.2). A CONNECT has two: the set at the end of its Variable Header and the optional set in the Will Properties field with the Payload." ;
                  rdfs:label "has property"@en ;
                  dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.2.2"@en .
 
@@ -149,7 +141,7 @@ MQTT:hasProperty rdf:type owl:ObjectProperty ;
 MQTT:hasUserProperty rdf:type owl:ObjectProperty ;
                      rdfs:domain MQTT:MQTTProperty ;
                      rdfs:range MQTT:UserProperty ;
-                     rdfs:comment "Relates the set of Properties of a packet to a User Property it contains. Not functional: 2.2.2.2 states that 'the User Property is allowed to appear multiple times to represent multiple name, value pairs' and that 'the same name is allowed to appear more than once'. Until version 4.0.0 a User Property was a single xsd:string, which could hold neither the pair nor several of them." ;
+                     rdfs:comment "Relates the set of Properties of a packet to a User Property it contains. 2.2.2.2: the User Property 'is allowed to appear multiple times to represent multiple name, value pairs', and the same name may appear more than once." ;
                      rdfs:label "has user property"@en ;
                      dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.2.2.2, Tab. 2-4"@en .
 
@@ -159,7 +151,7 @@ MQTT:hasPayloadFormat rdf:type owl:ObjectProperty ,
                                owl:FunctionalProperty ;
                       rdfs:domain MQTT:ApplicationMessage ;
                       rdfs:range MQTT:PayloadFormat ;
-                      rdfs:comment "Relates an Application Message to the format of its payload data. Functional, because 3.3.2.3.2 permits one value and states that 'it is a Protocol Error to include the Payload Format Indicator more than once'. Until version 5.0.0 this was a plain xsd:unsignedByte, although the clause enumerates exactly two values -- the same construction QoS and Retain Handling already had." ;
+                      rdfs:comment "Relates an Application Message to the format of its payload data (3.3.2.3.2)." ;
                       rdfs:label "has payload format"@en ;
                       dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.3.2.3.2, Tab. 2-4"@en .
 
@@ -169,7 +161,7 @@ MQTT:hasQoS rdf:type owl:ObjectProperty ,
                      owl:FunctionalProperty ;
             rdfs:domain MQTT:ApplicationMessage ;
             rdfs:range MQTT:QoS ;
-            rdfs:comment "Associates an Application Message with the Quality of Service it is delivered with. 1.2: 'When an Application Message is transported by MQTT it contains payload data, a Quality of Service (QoS), a collection of Properties, and a Topic Name.' Functional, because 3.3.1.2 permits exactly one QoS per message: 'A PUBLISH Packet MUST NOT have both QoS bits set to 1.'" ;
+            rdfs:comment "Associates an Application Message with the Quality of Service it is delivered with. 1.2: 'When an Application Message is transported by MQTT it contains payload data, a Quality of Service (QoS), a collection of Properties, and a Topic Name.'" ;
             rdfs:label "has QoS"@en ;
             dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2, 3.3.1.2"@en .
 
@@ -178,7 +170,7 @@ MQTT:hasQoS rdf:type owl:ObjectProperty ,
 MQTT:hasReasonCode rdf:type owl:ObjectProperty ;
                    rdfs:domain MQTT:MQTTControlPacket ;
                    rdfs:range MQTT:ReasonCode ;
-                   rdfs:comment "Relates a control packet to a Reason Code it carries. 2.4: CONNACK, PUBACK, PUBREC, PUBREL, PUBCOMP, DISCONNECT and AUTH carry a single Reason Code in the Variable Header, while SUBACK and UNSUBACK carry a list of one or more in the Payload. Not functional for that reason; the seven single-code packets are restricted to at most one. Which Reason Codes are allowed in which packet is recorded on the Reason Code individuals with the annotation appliesToPacket -- an annotation, so no reasoner checks it; a SHACL shape can." ;
+                   rdfs:comment "Relates a control packet to a Reason Code it carries. 2.4: CONNACK, PUBACK, PUBREC, PUBREL, PUBCOMP, DISCONNECT and AUTH carry a single Reason Code in the Variable Header, SUBACK and UNSUBACK a list of one or more in the Payload." ;
                    rdfs:label "has reason code"@en ;
                    dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4"@en .
 
@@ -187,7 +179,7 @@ MQTT:hasReasonCode rdf:type owl:ObjectProperty ;
 MQTT:hasRequestedTopicFilter rdf:type owl:ObjectProperty ;
                              rdfs:domain MQTT:Subscribe ;
                              rdfs:range MQTT:TopicFilter ;
-                             rdfs:comment "Relates a SUBSCRIBE packet to a Topic Filter it requests a subscription for. 3.8.3: 'The Payload of a SUBSCRIBE packet contains a list of Topic Filters indicating the Topics to which the Client wants to subscribe.' Not functional: the payload carries a list. Until version 2.1.0 the packet side of subscribing had no link to the filter at all, while the publishing side reached its topic through the application message." ;
+                             rdfs:comment "Relates a SUBSCRIBE packet to a Topic Filter it requests a subscription for. 3.8.3: 'The Payload of a SUBSCRIBE packet contains a list of Topic Filters indicating the Topics to which the Client wants to subscribe.'" ;
                              rdfs:label "has requested topic filter"@en ;
                              dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.8.3"@en .
 
@@ -207,7 +199,7 @@ MQTT:hasResponseTopic rdf:type owl:ObjectProperty ,
                                owl:FunctionalProperty ;
                       rdfs:domain MQTT:ApplicationMessage ;
                       rdfs:range MQTT:Topic ;
-                      rdfs:comment "Relates an Application Message to the Topic a response to it is to be published on. 3.3.2.3.5: 'Followed by a UTF-8 Encoded String which is used as the Topic Name for a response message', and 'it is a Protocol Error to include the Response Topic more than once', hence functional. Range MQTT:Topic, not a string: the response topic *is* a Topic Name, so it is the same kind of thing as the topic of the message itself. Until version 5.0.0 it was a literal, which is why the wildcard prohibition of [MQTT-3.3.2-14] needed a second SHACL shape of its own." ;
+                      rdfs:comment "Relates an Application Message to the Topic a response to it is to be published on. 3.3.2.3.5: the Response Topic 'is used as the Topic Name for a response message'." ;
                       rdfs:label "has response topic"@en ;
                       dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.3.2.3.5, Tab. 2-4"@en .
 
@@ -217,7 +209,7 @@ MQTT:hasRetainHandling rdf:type owl:ObjectProperty ,
                                 owl:FunctionalProperty ;
                        rdfs:domain MQTT:Subscription ;
                        rdfs:range MQTT:RetainHandling ;
-                       rdfs:comment "Relates a Subscription to its Retain Handling option, which specifies whether retained messages are sent when the subscription is established (3.8.3.1, bits 4 and 5 of the Subscription Options). Functional, because a subscription has one such option." ;
+                       rdfs:comment "Relates a Subscription to its Retain Handling option, which specifies whether retained messages are sent when the subscription is established (3.8.3.1)." ;
                        rdfs:label "has retain handling"@en ;
                        dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.8.3.1"@en .
 
@@ -226,7 +218,7 @@ MQTT:hasRetainHandling rdf:type owl:ObjectProperty ,
 MQTT:hasRevokedTopicFilter rdf:type owl:ObjectProperty ;
                            rdfs:domain MQTT:Unsubscribe ;
                            rdfs:range MQTT:TopicFilter ;
-                           rdfs:comment "Relates an UNSUBSCRIBE packet to a Topic Filter it ends the subscription for. 3.10.3: 'The Payload for the UNSUBSCRIBE packet contains the list of Topic Filters that the Client wishes to unsubscribe from.' Not functional: the payload carries a list." ;
+                           rdfs:comment "Relates an UNSUBSCRIBE packet to a Topic Filter it ends the subscription for. 3.10.3: 'The Payload for the UNSUBSCRIBE packet contains the list of Topic Filters that the Client wishes to unsubscribe from.'" ;
                            rdfs:label "has revoked topic filter"@en ;
                            dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.10.3"@en .
 
@@ -236,7 +228,7 @@ MQTT:hasSession rdf:type owl:ObjectProperty ,
                          owl:FunctionalProperty ;
                 rdfs:domain MQTT:MQTTConnection ;
                 rdfs:range MQTT:MQTTSession ;
-                rdfs:comment "Associates an MQTT connection with its session. Functional, because a Network Connection carries at most one Session; the converse does not hold, since 4.1 states that a session 'can continue across a sequence of Network Connections'." ;
+                rdfs:comment "Associates a Network Connection with its Session. A Session 'can continue across a sequence of Network Connections' (4.1)." ;
                 rdfs:label "has session"@en ;
                 dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 4.1"@en .
 
@@ -255,7 +247,7 @@ MQTT:hasTopic rdf:type owl:ObjectProperty ,
                        owl:FunctionalProperty ;
               rdfs:domain MQTT:ApplicationMessage ;
               rdfs:range MQTT:Topic ;
-              rdfs:comment "Associates an Application Message with its Topic Name. 1.2 defines the Topic Name as 'the label attached to an Application Message which is matched against the Subscriptions known to the Server' and lists exactly one Topic Name among the contents of an Application Message, hence functional. Until version 2.0.0 the domain was owl:Thing and the comment claimed subscriptions as well; subscriptions carry a Topic Filter, not a Topic Name (1.2)." ;
+              rdfs:comment "Associates an Application Message with its Topic Name, 'the label attached to an Application Message which is matched against the Subscriptions known to the Server' (1.2)." ;
               rdfs:label "has topic"@en ;
               dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2"@en .
 
@@ -293,7 +285,7 @@ MQTT:isSessionOfClient rdf:type owl:ObjectProperty ,
                                 owl:FunctionalProperty ;
                        rdfs:domain MQTT:MQTTSession ;
                        rdfs:range MQTT:MQTTClient ;
-                       rdfs:comment "Relates a Session to the Client it belongs to. 1.2 defines a Session as 'a stateful interaction between a Client and a Server', and 4.1 associates the Session State with the Client Identifier. Functional. Needed because a Session outlives the network connection -- 1.2: 'others can span multiple consecutive Network Connections' -- so reaching the client through MQTTConnection alone fails exactly in the gap between two connections." ;
+                       rdfs:comment "Relates a Session to the Client it belongs to. 1.2 defines a Session as 'a stateful interaction between a Client and a Server'; 4.1 associates the Session State with the Client Identifier." ;
                        rdfs:label "is session of client"@en ;
                        dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2, 4.1"@en .
 
@@ -303,7 +295,7 @@ MQTT:isSessionOnServer rdf:type owl:ObjectProperty ,
                                 owl:FunctionalProperty ;
                        rdfs:domain MQTT:MQTTSession ;
                        rdfs:range MQTT:MQTTServer ;
-                       rdfs:comment "Relates a Session to the Server it is held on. 1.2: a Session is 'a stateful interaction between a Client and a Server'. Functional." ;
+                       rdfs:comment "Relates a Session to the Server it is held on. 1.2: a Session is 'a stateful interaction between a Client and a Server'." ;
                        rdfs:label "is session on server"@en ;
                        dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2"@en .
 
@@ -312,7 +304,7 @@ MQTT:isSessionOnServer rdf:type owl:ObjectProperty ,
 MQTT:publishesTo rdf:type owl:ObjectProperty ;
                  rdfs:domain MQTT:MQTTClient ;
                  rdfs:range MQTT:Topic ;
-                 rdfs:comment "Indicates that a Client publishes messages to a Topic. Deliberately *not* derived like subscribesTo and connectsTo, and this is a limit of the pattern rather than an oversight: a chain would have to run Client -> Connection -> PUBLISH packet -> Application Message -> Topic, but a Network Connection carries the packets of both directions and the model has no sender. Table 2-1 does not settle it either -- for PUBLISH the direction of flow is 'Client to Server or Server to Client'. Who sent a packet is a fact about the exchange, not about the vocabulary, so this property stays asserted." ;
+                 rdfs:comment "Indicates that a Client publishes Application Messages to a Topic (1.2)." ;
                  rdfs:label "publishes to"@en ;
                  dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2"@en .
 
@@ -334,7 +326,7 @@ MQTT:subscribesTo rdf:type owl:ObjectProperty ;
                                          ) ;
                   rdfs:domain MQTT:MQTTClient ;
                   rdfs:range MQTT:TopicFilter ;
-                  rdfs:comment "Indicates that a Client subscribes to messages matching a Topic Filter. Since version 6.0.0 this is *derived*, not asserted: the chain says that the Topic Filter of a Subscription in a Session of a Client is a filter that Client subscribes to. 1.2 supports the act -- a Client 'subscribes to request Application Messages that it is interested in' -- but a subscription exists in a Session (1.2), so the long path carries the fact and this property is the shortcut. Asserting it next to the long path meant two unconnected ways of saying one thing." ;
+                  rdfs:comment "Indicates that a Client subscribes to messages matching a Topic Filter (1.2). Follows from the Topic Filter of a Subscription in a Session of that Client." ;
                   rdfs:label "subscribes to"@en ;
                   dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2"@en .
 
@@ -344,7 +336,7 @@ MQTT:supportsMaximumQoS rdf:type owl:ObjectProperty ,
                                  owl:FunctionalProperty ;
                         rdfs:domain MQTT:MQTTServer ;
                         rdfs:range MQTT:QoS ;
-                        rdfs:comment "The highest Quality of Service a Server supports for PUBLISH packets. 3.2.2.3.4: 'If a Server does not support QoS 1 or QoS 2 PUBLISH packets it MUST send a Maximum QoS in the CONNACK packet specifying the highest QoS it supports.' The standard transports this as a CONNACK property whose value is 0 or 1, and absence means 2; modelled here as a capability of the server, which is what the sentence is about, rather than as a second field on the packet. Functional." ;
+                        rdfs:comment "The highest Quality of Service a Server supports for PUBLISH packets. 3.2.2.3.4: 'If a Server does not support QoS 1 or QoS 2 PUBLISH packets it MUST send a Maximum QoS in the CONNACK packet specifying the highest QoS it supports.' Absence of the value means QoS 2." ;
                         rdfs:label "supports maximum QoS"@en ;
                         dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.2.2.3.4"@en .
 
@@ -395,7 +387,7 @@ MQTT:cleanStart rdf:type owl:DatatypeProperty ,
                          owl:FunctionalProperty ;
                 rdfs:domain MQTT:Connect ;
                 rdfs:range xsd:boolean ;
-                rdfs:comment "The Clean Start flag of a CONNECT packet. If true, the Server discards any existing Session and starts a new one; if false, it resumes the Session associated with the Client Identifier if one exists (3.1.2.4). Modelled as a boolean although the standard encodes it as a single bit." ;
+                rdfs:comment "The Clean Start flag of a CONNECT packet. If true, the Server discards any existing Session and starts a new one; if false, it resumes the Session associated with the Client Identifier if one exists (3.1.2.4)." ;
                 rdfs:label "clean start"@en ;
                 dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.1.2.4"@en .
 
@@ -405,7 +397,7 @@ MQTT:clientId rdf:type owl:DatatypeProperty ,
                        owl:FunctionalProperty ;
               rdfs:domain MQTT:MQTTClient ;
               rdfs:range xsd:string ;
-              rdfs:comment "The Client Identifier (ClientID) of a Client. 3.1.3.1: 'The Client Identifier (ClientID) identifies the Client to the Server. Each Client connecting to the Server has a unique ClientID.' Functional, because that sentence gives a Client one ClientID; that no two Clients share one is stated as owl:hasKey on MQTTClient, since a datatype property cannot be inverse functional in OWL 2. Until version 4.0.0 this string hung on a class ClientIdentifier that carried nothing else, while the ClientID assigned by the Server (assignedClientIdentifier, 3.2.2.3.7) was a plain literal -- the same fact in two shapes." ;
+              rdfs:comment "The Client Identifier (ClientID) of a Client. 3.1.3.1: 'The Client Identifier (ClientID) identifies the Client to the Server. Each Client connecting to the Server has a unique ClientID.'" ;
               rdfs:label "client identifier"@en ;
               dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.1.3.1"@en .
 
@@ -441,7 +433,7 @@ MQTT:dupFlag rdf:type owl:DatatypeProperty ;
 MQTT:endpointUrl rdf:type owl:DatatypeProperty ;
                  rdfs:domain MQTT:MQTTServer ;
                  rdfs:range xsd:anyURI ;
-                 rdfs:comment "The URI a Server can be reached at, for example mqtt://broker.example:1883 or mqtts://broker.example:8883. Deliberately not functional: a Server is often reachable at several URIs, for instance one per network interface or one per transport. Scheme and port are part of the URI and are not stated a second time; until version 3.0.0 this property hung on a class ServerEndpoint together with a separate port number, which allowed the port to be stated twice and to contradict itself, and nothing could detect it. The flat form matches WADL:hasBase of the sibling pattern. Note the difference to OPC UA, where an EndpointDescription is a structure of the standard itself (Part 4) carrying security mode, security policy and identity tokens: MQTT 5.0 defines no such structure, so there is nothing to mirror." ;
+                 rdfs:comment "The URI a Server can be reached at, for example mqtt://broker.example:1883 or mqtts://broker.example:8883. A Server can be reachable at several URIs, one per network interface or transport." ;
                  rdfs:label "endpoint URL"@en ;
                  dcterms:source "Extension beyond MQTT Version 5.0: not defined in the standard. The word appears once, non-definitionally, in 3.1.4: 'a Server MAY support multiple protocols [...] on the same TCP port or other network endpoint'."@en .
 
@@ -478,7 +470,7 @@ MQTT:noLocal rdf:type owl:DatatypeProperty ,
                       owl:FunctionalProperty ;
              rdfs:domain MQTT:Subscription ;
              rdfs:range xsd:boolean ;
-             rdfs:comment "The No Local option of a Subscription. If true, application messages are not forwarded to a connection with the same Client Identifier as the publishing connection (3.8.3.1, bit 2 of the Subscription Options). It is a Protocol Error to set it on a Shared Subscription." ;
+             rdfs:comment "The No Local option of a Subscription. If true, Application Messages are not forwarded to a connection with the same Client Identifier as the publishing connection (3.8.3.1). It is a Protocol Error to set it on a Shared Subscription." ;
              rdfs:label "no local"@en ;
              dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.8.3.1"@en .
 
@@ -496,7 +488,7 @@ MQTT:packetIdentifier rdf:type owl:DatatypeProperty ;
 MQTT:password rdf:type owl:DatatypeProperty ;
               rdfs:domain MQTT:Connect ;
               rdfs:range xsd:base64Binary ;
-              rdfs:comment "The Password field of the CONNECT payload. 3.1.3.6: 'The Password field is Binary Data. Although this field is called Password, it can be used to carry any credential information.' Hence xsd:base64Binary like correlationData and authenticationData; MQTT 5.0 changed the type from the UTF-8 string that MQTT 3.1.1 had, and until version 4.0.0 this property still said xsd:string." ;
+              rdfs:comment "The Password field of the CONNECT payload. 3.1.3.6: 'The Password field is Binary Data. Although this field is called Password, it can be used to carry any credential information.'" ;
               rdfs:label "password"@en ;
               dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.1.3.6"@en .
 
@@ -534,7 +526,7 @@ MQTT:propertyName rdf:type owl:DatatypeProperty ,
                            owl:FunctionalProperty ;
                   rdfs:domain MQTT:UserProperty ;
                   rdfs:range xsd:string ;
-                  rdfs:comment "The name half of the UTF-8 String Pair of a User Property (2.2.2.2). Functional, because a pair has one name." ;
+                  rdfs:comment "The name half of the UTF-8 String Pair of a User Property (2.2.2.2)." ;
                   rdfs:label "property name"@en ;
                   dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.2.2.2"@en .
 
@@ -544,7 +536,7 @@ MQTT:propertyValue rdf:type owl:DatatypeProperty ,
                             owl:FunctionalProperty ;
                    rdfs:domain MQTT:UserProperty ;
                    rdfs:range xsd:string ;
-                   rdfs:comment "The value half of the UTF-8 String Pair of a User Property (2.2.2.2). Functional, because a pair has one value." ;
+                   rdfs:comment "The value half of the UTF-8 String Pair of a User Property (2.2.2.2)." ;
                    rdfs:label "property value"@en ;
                    dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.2.2.2"@en .
 
@@ -554,7 +546,7 @@ MQTT:qosLevel rdf:type owl:DatatypeProperty ,
                        owl:FunctionalProperty ;
               rdfs:domain MQTT:QoS ;
               rdfs:range xsd:unsignedByte ;
-              rdfs:comment "The numeric level of a Quality of Service, as given in Table 3-2: 0, 1 or 2. The value 3 is reserved and must not be used. Until version 2.0.0 this property carried rdfs:domain owl:Thing and was the only way to state a QoS; it now belongs to the three QoS individuals, which the classes QoS0Publication, QoS1Publication and QoS2Publication are defined over." ;
+              rdfs:comment "The numeric level of a Quality of Service, as given in Table 3-2: 0, 1 or 2. The value 3 is reserved and must not be used." ;
               rdfs:label "QoS level"@en ;
               dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.3.1.2, Tab. 3-2"@en .
 
@@ -564,7 +556,7 @@ MQTT:reasonCodeValue rdf:type owl:DatatypeProperty ,
                               owl:FunctionalProperty ;
                      rdfs:domain MQTT:ReasonCode ;
                      rdfs:range xsd:unsignedByte ;
-                     rdfs:comment "The one byte unsigned value of a Reason Code. 2.4: 'Reason Codes less than 0x80 indicate successful completion of an operation [...] values of 0x80 or greater indicate failure.' Until version 3.0.0 this property was called reasonCode and carried the value on the packet itself; it now belongs to the Reason Code, and packets point at the Reason Code with hasReasonCode. Two Reason Codes may share a value -- 0x00 is Success, Normal disconnection and Granted QoS 0 -- so the value does not identify them." ;
+                     rdfs:comment "The one byte unsigned value of a Reason Code. 2.4: 'Reason Codes less than 0x80 indicate successful completion of an operation [...] values of 0x80 or greater indicate failure.' Several Reason Codes can share a value." ;
                      rdfs:label "reason code value"@en ;
                      dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
 
@@ -601,7 +593,7 @@ MQTT:requestProblemInformation rdf:type owl:DatatypeProperty ,
                                         owl:FunctionalProperty ;
                                rdfs:domain MQTT:Connect ;
                                rdfs:range xsd:boolean ;
-                               rdfs:comment "Whether the Client asks the Server to send a Reason String or User Properties in case of failure (3.1.2.11.7). A value other than 0 or 1 is a Protocol Error, hence boolean." ;
+                               rdfs:comment "Whether the Client asks the Server to send a Reason String or User Properties in case of failure (3.1.2.11.7). A value other than 0 or 1 is a Protocol Error." ;
                                rdfs:label "request problem information"@en ;
                                dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.1.2.11.7"@en .
 
@@ -611,7 +603,7 @@ MQTT:requestResponseInformation rdf:type owl:DatatypeProperty ,
                                          owl:FunctionalProperty ;
                                 rdfs:domain MQTT:Connect ;
                                 rdfs:range xsd:boolean ;
-                                rdfs:comment "Whether the Client asks the Server to return Response Information in the CONNACK (3.1.2.11.6). A value other than 0 or 1 is a Protocol Error, hence boolean." ;
+                                rdfs:comment "Whether the Client asks the Server to return Response Information in the CONNACK (3.1.2.11.6). A value other than 0 or 1 is a Protocol Error." ;
                                 rdfs:label "request response information"@en ;
                                 dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.1.2.11.6"@en .
 
@@ -670,7 +662,7 @@ MQTT:serverReference rdf:type owl:DatatypeProperty ,
                               owl:FunctionalProperty ;
                      rdfs:domain MQTT:MQTTProperty ;
                      rdfs:range xsd:string ;
-                     rdfs:comment "A reference to another Server the Client should use instead, sent in a CONNACK or DISCONNECT when the Server redirects the Client (3.2.2.3.16, 3.14.2.2.5, 4.11). Until version 4.0.0 the domain was MQTT:Connack, which contradicted this comment and the Packet column of Tab. 2-4: because the fifteen packet types are pairwise disjoint, a DISCONNECT carrying a Server Reference made the model inconsistent -- a legitimate case under 4.11. It is the one property of Tab. 2-4 that appears in several packet types and has no carrier of its own, so it belongs with the other seven on MQTT:MQTTProperty." ;
+                     rdfs:comment "A reference to another Server the Client should use instead, sent in a CONNACK or DISCONNECT when the Server redirects the Client (3.2.2.3.16, 3.14.2.2.5, 4.11)." ;
                      rdfs:label "server reference"@en ;
                      dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.2.2.3.16, 3.14.2.2.5"@en .
 
@@ -707,7 +699,7 @@ MQTT:supportsRetain rdf:type owl:DatatypeProperty ,
                              owl:FunctionalProperty ;
                     rdfs:domain MQTT:MQTTServer ;
                     rdfs:range xsd:boolean ;
-                    rdfs:comment "Whether the Server supports retained messages. 3.2.2.3.5: 'this byte declares whether the Server supports retained messages'; absence means it does. Modelled as a capability of the server rather than as a field of the CONNACK that announces it." ;
+                    rdfs:comment "Whether the Server supports retained messages. 3.2.2.3.5: 'this byte declares whether the Server supports retained messages'; absence means it does." ;
                     rdfs:label "supports retain"@en ;
                     dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.2.2.3.5"@en .
 
@@ -746,7 +738,7 @@ MQTT:supportsWildcardSubscriptions rdf:type owl:DatatypeProperty ,
 MQTT:topicAlias rdf:type owl:DatatypeProperty ;
                 rdfs:domain MQTT:Publish ;
                 rdfs:range xsd:unsignedShort ;
-                rdfs:comment "An integer value used to identify the Topic instead of using the Topic Name, in order to reduce the size of the PUBLISH packet. 3.3.2.3.4: the sender 'sets a Topic Alias mapping by including a non-zero length Topic Name and a Topic Alias in the PUBLISH packet'. Until version 2.0.0 the domain was ApplicationMessage; the alias is a shorthand inside the packet, not a property of the message." ;
+                rdfs:comment "An integer value used to identify the Topic instead of using the Topic Name, in order to reduce the size of the PUBLISH packet (3.3.2.3.4)." ;
                 rdfs:label "topic alias"@en ;
                 dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.3.2.3.4"@en .
 
@@ -801,7 +793,7 @@ MQTT:willRetain rdf:type owl:DatatypeProperty ,
                          owl:FunctionalProperty ;
                 rdfs:domain MQTT:Connect ;
                 rdfs:range xsd:boolean ;
-                rdfs:comment "The Will Retain flag of a CONNECT packet: whether the Will Message is published as a retained message when the Network Connection is closed abnormally (3.1.2.7). The QoS of the Will Message (3.1.2.6) is stated with hasQoS on the will message itself, since a Will Message is an Application Message." ;
+                rdfs:comment "The Will Retain flag of a CONNECT packet: whether the Will Message is published as a retained message when the Network Connection is closed abnormally (3.1.2.7)." ;
                 rdfs:label "will retain"@en ;
                 dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.1.2.7"@en .
 
@@ -853,7 +845,7 @@ MQTT:Connect rdf:type owl:Class ;
 
 ###  http://www.w3id.org/hsu-aut/MQTT#DisallowedUnicodeCodePoint
 MQTT:DisallowedUnicodeCodePoint rdf:type owl:Class ;
-                                rdfs:comment "One of the Unicode Control Codes or Unicode Noncharacters which should not be included in a UTF-8 Encoded String (1.2, 1.5.4). The fifteenth term defined in 1.2; modelled for completeness of the normative vocabulary, although the restriction itself is a matter of character encoding and cannot be checked in OWL." ;
+                                rdfs:comment "One of the Unicode Control Codes or Unicode Noncharacters which should not be included in a UTF-8 Encoded String (1.2, 1.5.4)." ;
                                 rdfs:label "disallowed Unicode code point"@en ;
                                 dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2, 1.5.4"@en .
 
@@ -882,7 +874,7 @@ MQTT:FixedHeader rdf:type owl:Class ;
 MQTT:MalformedPacket rdf:type owl:Class ;
                      rdfs:subClassOf MQTT:MQTTControlPacket ;
                      rdfs:seeAlso MQTT:ReasonCodeMalformedPacket ;
-                     rdfs:comment "A control packet that cannot be parsed according to the specification (1.2). Deliberately not a member of the disjointness axiom over the fifteen control packet types: a packet that cannot be parsed has no known type. Refer to 4.13.1 for error handling." ;
+                     rdfs:comment "A control packet that cannot be parsed according to the specification (1.2). Refer to 4.13.1 for error handling." ;
                      rdfs:label "malformed packet"@en ;
                      dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2, 4.13.1"@en .
 
@@ -890,7 +882,7 @@ MQTT:MalformedPacket rdf:type owl:Class ;
 ###  http://www.w3id.org/hsu-aut/MQTT#MQTTClient
 MQTT:MQTTClient rdf:type owl:Class ;
                 owl:hasKey ( MQTT:clientId ) ;
-                rdfs:comment "A program or device that uses MQTT to publish and/or subscribe to messages. The key says what 3.1.3.1 says: 'Each Client connecting to the Server has a unique ClientID' -- two Clients with the same ClientID are the same Client." ;
+                rdfs:comment "A program or device that uses MQTT to publish and/or subscribe to messages (1.2). Each Client connecting to a Server has a unique ClientID (3.1.3.1)." ;
                 rdfs:label "MQTT client"@en ;
                 dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2"@en .
 
@@ -911,7 +903,7 @@ MQTT:MQTTControlPacket rdf:type owl:Class ;
 
 ###  http://www.w3id.org/hsu-aut/MQTT#MQTTProperty
 MQTT:MQTTProperty rdf:type owl:Class ;
-                  rdfs:comment "The set of Properties of a control packet. 2.2.2: 'The last field in the Variable Header of the CONNECT, CONNACK, PUBLISH, PUBACK, PUBREC, PUBREL, PUBCOMP, SUBSCRIBE, SUBACK, UNSUBSCRIBE, UNSUBACK, DISCONNECT, and AUTH packet is a set of Properties', and 'the set of Properties is composed of a Property Length followed by the Properties'. This class is where those properties of Tab. 2-4 live that appear in more than one packet type and have no carrier of their own in the model: authentication method and data, maximum packet size, receive maximum, topic alias maximum, reason string, server reference, and the user properties. The other twenty properties of Tab. 2-4 hang on the entity they are about -- the session, the message, the subscription, the server, the packet type -- which is why they are not here. That division is deliberate; it was unwritten until version 5.0.0, and server reference was on the wrong side of it." ;
+                  rdfs:comment "The set of Properties of a control packet. 2.2.2: 'The last field in the Variable Header [...] is a set of Properties', composed of a Property Length followed by the Properties. Carries those Properties of Tab. 2-4 that belong to the packet exchange itself: authentication method and data, maximum packet size, receive maximum, topic alias maximum, reason string, server reference and the user properties." ;
                   rdfs:label "MQTT property"@en ;
                   dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.2.2"@en .
 
@@ -937,7 +929,7 @@ MQTT:PayloadFormat rdf:type owl:Class ;
                                                      MQTT:PayloadFormatUTF8
                                                    )
                                        ] ;
-                   rdfs:comment "The format of the payload data of an Application Message. 3.3.2.3.2 enumerates exactly two values: 'either of: 0 (0x00) Byte Indicates that the Payload is unspecified bytes, which is equivalent to not sending a Payload Format Indicator. 1 (0x01) Byte Indicates that the Payload is UTF-8 Encoded Character Data.' Defined as the enumeration of those two, like QoS and RetainHandling, so that membership is derived rather than asserted." ;
+                   rdfs:comment "The format of the payload data of an Application Message: either unspecified bytes or UTF-8 Encoded Character Data (3.3.2.3.2)." ;
                    rdfs:label "payload format"@en ;
                    dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.3.2.3.2"@en .
 
@@ -968,7 +960,7 @@ MQTT:Pingresp rdf:type owl:Class ;
 ###  http://www.w3id.org/hsu-aut/MQTT#ProtocolError
 MQTT:ProtocolError rdf:type owl:Class ;
                    rdfs:seeAlso MQTT:ReasonCodeProtocolError ;
-                   rdfs:comment "An error that is detected after the packet has been parsed and found to contain data that is not allowed by the protocol or is inconsistent with the state of the Client or Server (1.2). Not a control packet, therefore no superclass under MQTTControlPacket. Refer to 4.13.1 for error handling." ;
+                   rdfs:comment "An error detected after a packet has been parsed, where the data is not allowed by the protocol or is inconsistent with the state of the Client or Server (1.2). Refer to 4.13.1 for error handling." ;
                    rdfs:label "protocol error"@en ;
                    dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2, 4.13.1"@en .
 
@@ -1041,7 +1033,7 @@ MQTT:QoS rdf:type owl:Class ;
                                            MQTT:QoS2
                                          )
                              ] ;
-         rdfs:comment "The level of assurance for the delivery of an Application Message (4.3). Exactly three levels exist, which is why this class is defined as the enumeration of its three individuals: Table 3-2 lists the values 0, 1 and 2 and marks the fourth bit combination as 'Reserved - must not be used'." ;
+         rdfs:comment "The level of assurance for the delivery of an Application Message (4.3). Table 3-2 lists the three levels 0, 1 and 2; the fourth bit combination is reserved and must not be used." ;
          rdfs:label "quality of service"@en ;
          dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.3.1.2, 4.3"@en .
 
@@ -1060,7 +1052,7 @@ MQTT:QoS0Publication rdf:type owl:Class ;
                                                               )
                                          ] ;
                      rdfs:subClassOf MQTT:Publish ;
-                     rdfs:comment "A PUBLISH packet whose Application Message is delivered with QoS 0, at most once delivery (4.3.1). Defined rather than asserted: the class is the set of PUBLISH packets whose message has the QoS individual QoS0. Membership is therefore derivable in both directions, and the disjointness of the three classes follows from the functionality of hasQoS and hasApplicationMessage together with the distinctness of the three QoS individuals." ;
+                     rdfs:comment "A PUBLISH packet whose Application Message is delivered with QoS 0, at most once delivery (4.3.1)." ;
                      rdfs:label "QoS 0 publication"@en ;
                      dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 4.3.1"@en .
 
@@ -1079,7 +1071,7 @@ MQTT:QoS1Publication rdf:type owl:Class ;
                                                               )
                                          ] ;
                      rdfs:subClassOf MQTT:Publish ;
-                     rdfs:comment "A PUBLISH packet whose Application Message is delivered with QoS 1, at least once delivery (4.3.2). Defined rather than asserted: the class is the set of PUBLISH packets whose message has the QoS individual QoS1. Membership is therefore derivable in both directions, and the disjointness of the three classes follows from the functionality of hasQoS and hasApplicationMessage together with the distinctness of the three QoS individuals." ;
+                     rdfs:comment "A PUBLISH packet whose Application Message is delivered with QoS 1, at least once delivery (4.3.2)." ;
                      rdfs:label "QoS 1 publication"@en ;
                      dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 4.3.2"@en .
 
@@ -1098,7 +1090,7 @@ MQTT:QoS2Publication rdf:type owl:Class ;
                                                               )
                                          ] ;
                      rdfs:subClassOf MQTT:Publish ;
-                     rdfs:comment "A PUBLISH packet whose Application Message is delivered with QoS 2, exactly once delivery (4.3.3). Defined rather than asserted: the class is the set of PUBLISH packets whose message has the QoS individual QoS2. Membership is therefore derivable in both directions, and the disjointness of the three classes follows from the functionality of hasQoS and hasApplicationMessage together with the distinctness of the three QoS individuals." ;
+                     rdfs:comment "A PUBLISH packet whose Application Message is delivered with QoS 2, exactly once delivery (4.3.3)." ;
                      rdfs:label "QoS 2 publication"@en ;
                      dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 4.3.3"@en .
 
@@ -1154,7 +1146,7 @@ MQTT:ReasonCode rdf:type owl:Class ;
                                                       MQTT:ReasonCodeWildcardSubscriptionsNotSupported
                                                 )
                                     ] ;
-                rdfs:comment "A one byte unsigned value that indicates the result of an operation (2.4). Table 2-6 lists exactly 45 Reason Codes, which is why this class is the enumeration of its individuals. The same value can stand for different Reason Codes in different packets: 0x00 is Success, Normal disconnection and Granted QoS 0." ;
+                rdfs:comment "A one byte unsigned value that indicates the result of an operation (2.4). Table 2-6 lists 45 Reason Codes; the same value can stand for different ones in different packets, as 0x00 is Success, Normal disconnection and Granted QoS 0." ;
                 rdfs:label "reason code"@en ;
                 dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4, Tab. 2-6"@en .
 
@@ -1172,7 +1164,7 @@ MQTT:SuccessReasonCode rdf:type owl:Class ;
                                                                   ]
                                                                 )
                                            ] ;
-                       rdfs:comment "A Reason Code that indicates successful completion. 2.4: 'Reason Codes less than 0x80 indicate successful completion of an operation.' Defined over the value, so membership is derived rather than asserted." ;
+                       rdfs:comment "A Reason Code that indicates successful completion. 2.4: 'Reason Codes less than 0x80 indicate successful completion of an operation.'" ;
                        rdfs:label "success reason code"@en ;
                        dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4"@en .
 
@@ -1190,7 +1182,7 @@ MQTT:ErrorReasonCode rdf:type owl:Class ;
                                                                 ]
                                                               )
                                          ] ;
-                     rdfs:comment "A Reason Code that indicates failure. 2.4: 'Reason Code values of 0x80 or greater indicate failure.' Defined over the value; disjointness from SuccessReasonCode follows from the functionality of reasonCodeValue and needs no separate axiom." ;
+                     rdfs:comment "A Reason Code that indicates failure. 2.4: 'Reason Code values of 0x80 or greater indicate failure.'" ;
                      rdfs:label "error reason code"@en ;
                      dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.4"@en .
 
@@ -1203,7 +1195,7 @@ MQTT:RetainHandling rdf:type owl:Class ;
                                                       MQTT:RetainHandling2
                                                     )
                                         ] ;
-                    rdfs:comment "The Retain Handling option of a Subscription, which specifies whether retained messages are sent when the subscription is established (3.8.3.1). Exactly three values are allowed, so the class is the enumeration of its three individuals; the value 3 is a Protocol Error. Same construction as QoS." ;
+                    rdfs:comment "The Retain Handling option of a Subscription, which specifies whether retained messages are sent when the subscription is established (3.8.3.1). Three values are allowed; the value 3 is a Protocol Error." ;
                     rdfs:label "retain handling"@en ;
                     dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 3.8.3.1"@en .
 
@@ -1219,7 +1211,7 @@ MQTT:RetainedMessage rdf:type owl:Class ;
 ###  http://www.w3id.org/hsu-aut/MQTT#SharedSubscription
 MQTT:SharedSubscription rdf:type owl:Class ;
                         rdfs:subClassOf MQTT:Subscription ;
-                        rdfs:comment "A Subscription that can be associated with more than one subscribing Session, so that a matching publication is sent to only one of them (1.2, 4.8.2). It is identified by a Topic Filter of the form $share/{ShareName}/{filter}. Until version 2.0.0 this class was declared disjoint with WildcardSubscription; that is refuted by 4.8.2, where the {filter} part has 'the same syntax and semantics as a Topic Filter in a non-shared subscription' and the example $share/consumer1/sport/tennis/+ contains a wildcard. Being shared and containing a wildcard are independent classifications." ;
+                        rdfs:comment "A Subscription that can be associated with more than one subscribing Session, so that a matching publication is sent to only one of them (1.2, 4.8.2). Its Topic Filter has the form $share/{ShareName}/{filter}." ;
                         rdfs:label "shared subscription"@en ;
                         dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2, 4.8.2"@en .
 
@@ -1257,7 +1249,7 @@ MQTT:Subscription rdf:type owl:Class ;
                                     owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
                                     owl:onClass MQTT:QoS
                                   ] ;
-                  rdfs:comment "A Subscription comprises a Topic Filter and a maximum QoS, and is associated with a single Session (1.2); the two cardinalities state the first half of that sentence. The single Session is stated as a general axiom over the non-shared part of this class, because 1.2 and 4.8.2 allow a Shared Subscription to be associated with more than one Session. The further requirement that each Subscription within a Session has a different Topic Filter is a key constraint over a pair and is not expressible in OWL 2; it belongs in SHACL." ;
+                  rdfs:comment "A Subscription comprises a Topic Filter and a maximum QoS and is associated with a single Session; a Session can contain more than one Subscription, each with a different Topic Filter (1.2). A Shared Subscription can be associated with more than one Session (4.8.2)." ;
                   rdfs:label "subscription"@en ;
                   dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 1.2"@en .
 
@@ -1309,7 +1301,7 @@ MQTT:UserProperty rdf:type owl:Class ;
                                     owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
                                     owl:onDataRange xsd:string
                                   ] ;
-                  rdfs:comment "A User Property of a control packet, carrying one name and one value. 2.2.2.2: 'Followed by a UTF-8 String Pair.' The two cardinalities are that sentence: a pair is exactly one name and one value. A class rather than a literal because the standard defines a structure here and because two pairs with the same name have to stay distinguishable -- 2.2.2.2 allows that case explicitly. The meaning of the pair is not the protocol's business: 'This property is intended to provide a means of transferring application layer name-value tags whose meaning and interpretation are known only by the application programs responsible for sending and receiving them.'" ;
+                  rdfs:comment "A User Property of a control packet, carrying one name and one value. 2.2.2.2: 'Followed by a UTF-8 String Pair.' Its meaning and interpretation are known only to the application programs that send and receive it." ;
                   rdfs:label "user property"@en ;
                   dcterms:source "MQTT Version 5.0, OASIS Standard, 07 March 2019, 2.2.2.2, Tab. 2-4"@en .
 
@@ -1949,8 +1941,7 @@ MQTT:ReasonCodeWildcardSubscriptionsNotSupported rdf:type owl:NamedIndividual ,
 ] .
 
 
-# The two payload formats are pairwise different, for the same reason as the
-# QoS levels below.
+# The two payload formats are pairwise different.
 [ rdf:type owl:AllDifferent ;
   owl:members ( MQTT:PayloadFormatUnspecifiedBytes
                 MQTT:PayloadFormatUTF8
@@ -1958,9 +1949,7 @@ MQTT:ReasonCodeWildcardSubscriptionsNotSupported rdf:type owl:NamedIndividual ,
 ] .
 
 
-# The three QoS levels are pairwise different. Without this axiom the
-# enumeration above would not keep them apart, and the disjointness of the
-# three publication classes would not follow.
+# The three QoS levels are pairwise different.
 [ rdf:type owl:AllDifferent ;
   owl:members ( MQTT:QoS0
                 MQTT:QoS1
@@ -2055,17 +2044,11 @@ MQTT:ReasonCodeWildcardSubscriptionsNotSupported rdf:type owl:NamedIndividual ,
 #    Payload per packet type -- 2.3, Table 2-5
 #################################################################
 # "Some MQTT Control Packets contain a Payload as the final part of the packet.
-# In the PUBLISH packet this is the Application Message" (2.3). Table 2-5 then
-# states for each of the fifteen packet types whether a Payload is Required,
-# Optional or None. hasPayload is functional, so the upper bound of one holds
-# everywhere and only the two other cases need an axiom here:
+# In the PUBLISH packet this is the Application Message" (2.3). Table 2-5
+# states per packet type whether a Payload is Required, Optional or None:
 #   Required (CONNECT, SUBSCRIBE, SUBACK, UNSUBSCRIBE, UNSUBACK) -> min 1
 #   Optional (PUBLISH)                                           -> nothing
 #   None (the remaining nine)                                    -> max 0
-# The nine max-0 axioms are the only ones in this pattern that can make an
-# existing description inconsistent rather than merely unsatisfiable in theory:
-# a PINGREQ with a Payload was permitted up to version 5.0.0 and is an error
-# from 6.0.0 on. That is the point of them.
 
 MQTT:Connect rdfs:subClassOf [ rdf:type owl:Restriction ;
                       owl:onProperty MQTT:hasPayload ;
@@ -2155,9 +2138,8 @@ MQTT:Auth rdfs:subClassOf [ rdf:type owl:Restriction ;
 #################################################################
 #    Packet type values -- 2.1.2, Table 2-1
 #################################################################
-# The four-bit value that identifies a packet type on the wire, as an
-# annotation on the class. Value 0 is Reserved and Forbidden in Table 2-1 and
-# has no class here.
+# The four-bit value that identifies a packet type on the wire. Value 0 is
+# Reserved and Forbidden in Table 2-1 and has no class here.
 
 MQTT:Connect MQTT:packetTypeValue "1"^^xsd:unsignedByte .
 MQTT:Connack MQTT:packetTypeValue "2"^^xsd:unsignedByte .
